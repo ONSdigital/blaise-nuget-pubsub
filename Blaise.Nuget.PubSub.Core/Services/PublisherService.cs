@@ -1,9 +1,7 @@
 ﻿using Blaise.Nuget.PubSub.Core.Interfaces;
-using System;
+using Google.Cloud.PubSub.V1;
+using Google.Protobuf;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Blaise.Nuget.PubSub.Core.Services
 {
@@ -11,7 +9,19 @@ namespace Blaise.Nuget.PubSub.Core.Services
     {
         public void PublishMessage(string projectId, string topicId, string message, Dictionary<string, string> attributes = null)
         {
-            throw new NotImplementedException();
+            var publisherService = PublisherServiceApiClient.Create();
+            var topicName = new TopicName(projectId, topicId);
+            
+            var pubsubMessage = new PubsubMessage
+            {
+                Data = ByteString.CopyFromUtf8(message),
+                Attributes =
+                {
+                    attributes
+                }
+            };
+
+            publisherService.Publish(topicName, new[] { pubsubMessage });
         }
     }
 }

@@ -36,7 +36,7 @@ namespace Blaise.Nuget.PubSub.Api
             var unityContainer = new UnityContainer();
             unityContainer.RegisterType<IPublisherService, PublisherService>();
             unityContainer.RegisterType<ISubscriptionService, SubscriptionService>();
-            unityContainer.RegisterType<IScheduleService, ScheduleService>();
+            unityContainer.RegisterType<ISchedulerService, SchedulerService>();
 
             _publisherService = unityContainer.Resolve<IPublisherService>();
             _subscriptionService = unityContainer.Resolve<ISubscriptionService>();

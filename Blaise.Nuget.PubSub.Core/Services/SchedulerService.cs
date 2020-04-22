@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Blaise.Nuget.PubSub.Core.Services
 {
-    public class ScheduleService : IScheduleService
+    public class SchedulerService : ISchedulerService
     {
     }
 }

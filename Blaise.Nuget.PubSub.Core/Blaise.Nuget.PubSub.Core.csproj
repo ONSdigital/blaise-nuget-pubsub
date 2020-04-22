@@ -116,12 +116,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Interfaces\IPublisherService.cs" />
-    <Compile Include="Interfaces\IScheduleService.cs" />
+    <Compile Include="Interfaces\ISchedulerService.cs" />
     <Compile Include="Interfaces\ISubscriptionService.cs" />
     <Compile Include="Models\ScheduleModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\PublisherService.cs" />
-    <Compile Include="Services\ScheduleService.cs" />
+    <Compile Include="Services\SchedulerService.cs" />
     <Compile Include="Services\SubscriptionService.cs" />
   </ItemGroup>
   <ItemGroup>

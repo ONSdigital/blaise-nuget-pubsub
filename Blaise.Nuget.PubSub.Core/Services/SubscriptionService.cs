@@ -1,19 +1,34 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Core.Interfaces;
 using Blaise.Nuget.PubSub.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Google.Cloud.PubSub.V1;
 
 namespace Blaise.Nuget.PubSub.Core.Services
 {
     public class SubscriptionService : ISubscriptionService
     {
+        private readonly ISchedulerService _schedulerService;
+
+        public SubscriptionService(ISchedulerService schedulerService)
+        {
+            _schedulerService = schedulerService;
+        }
+
         public void Subscribe(string projectId, string subscriptionId, IMessageHandler messageHandler, ScheduleModel scheduleModel)
         {
-            throw new NotImplementedException();
+            var subscriberService = SubscriberServiceApiClient.Create();
+            var subscriptionName = new SubscriptionName(projectId, subscriptionId);
+            var response = subscriberService.Pull(subscriptionName, returnImmediately: true, maxMessages: scheduleModel.NumberOfMessages);
+
+            foreach (ReceivedMessage received in response.ReceivedMessages)
+            {
+                var message = received.Message.Data.ToStringUtf8();
+
+                if (messageHandler.HandleMessage(message))
+                {
+                    subscriberService.Acknowledge(subscriptionName, new[] { received.AckId });
+                }
+            };
         }
     }
 }

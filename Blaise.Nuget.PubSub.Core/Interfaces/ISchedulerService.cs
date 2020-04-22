@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Blaise.Nuget.PubSub.Core.Interfaces
 {
-    public interface IScheduleService
+    public interface ISchedulerService
     {
     }
 }
