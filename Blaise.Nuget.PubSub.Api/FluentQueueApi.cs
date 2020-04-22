@@ -3,25 +3,26 @@ using Blaise.Nuget.PubSub.Api.Interfaces;
 using Blaise.Nuget.PubSub.Contracts.Enums;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Core.Interfaces;
+using Blaise.Nuget.PubSub.Core.Models;
 using System.Collections.Generic;
 
 namespace Blaise.Nuget.PubSub.Api
 {
     public sealed class FluentQueueApi : IFluentQueueApi
     {
-        private readonly IConfigurationProvider _configurationProvider;
         private readonly IPublisherService _publisherService;
         private readonly ISubscriptionService _subscriptionService;
 
         private string _projectId;
         private string _topicId;
+        private string _subscriptionId;
+        private int _numberOfMessages;
+        private IMessageHandler _messageHandler;
 
         public FluentQueueApi(
-            IConfigurationProvider configurationProvider,
             IPublisherService publisherService,
             ISubscriptionService subscriptionService)
         {
-            _configurationProvider = configurationProvider;
             _publisherService = publisherService;
             _subscriptionService = subscriptionService;
         }
@@ -47,17 +48,29 @@ namespace Blaise.Nuget.PubSub.Api
 
         public IFluentSubscriptionApi ForSubscription(string subscriptionId)
         {
-            throw new System.NotImplementedException();
+            _subscriptionId = subscriptionId;
+
+            return this;
         }
 
         public IFluentSubscriptionApi Pull(int numberOfMessages, IMessageHandler messageHandler)
         {
-            throw new System.NotImplementedException();
+            _numberOfMessages = numberOfMessages;
+            _messageHandler = messageHandler;
+
+            return this;
         }
 
         public void Every(int intervalNumber, IntervalType intervalType)
         {
-            throw new System.NotImplementedException();
+            var scheduleModel = new ScheduleModel
+            {
+                NumberOfMessages = _numberOfMessages,
+                IntervalNumber = intervalNumber,
+                IntervalType = intervalType
+            };
+
+            _subscriptionService.Subscribe(_projectId, _subscriptionId, _messageHandler, scheduleModel);
         }
     }
 }

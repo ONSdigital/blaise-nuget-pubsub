@@ -8,6 +8,6 @@ namespace Blaise.Nuget.PubSub.Core.Models
         
         public int IntervalNumber { get; set; }
 
-        public IntervalType intervalType { get; set; }
+        public IntervalType IntervalType { get; set; }
     }
 }
