@@ -4,8 +4,10 @@ using Blaise.Nuget.PubSub.Contracts.Enums;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Core.Interfaces;
 using Blaise.Nuget.PubSub.Core.Models;
+using Blaise.Nuget.PubSub.Core.Services;
 using System;
 using System.Collections.Generic;
+using Unity;
 
 namespace Blaise.Nuget.PubSub.Api
 {
@@ -20,12 +22,24 @@ namespace Blaise.Nuget.PubSub.Api
         private int _numberOfMessages;
         private IMessageHandler _messageHandler;
 
-        public FluentQueueApi(
+        //This constructor is needed for unit testing but should not be visible from services that ingest the package
+        internal FluentQueueApi(
             IPublisherService publisherService,
             ISubscriptionService subscriptionService)
         {
             _publisherService = publisherService;
             _subscriptionService = subscriptionService;
+        }
+
+        public FluentQueueApi()
+        {
+            var unityContainer = new UnityContainer();
+            unityContainer.RegisterType<IPublisherService, PublisherService>();
+            unityContainer.RegisterType<ISubscriptionService, SubscriptionService>();
+            unityContainer.RegisterType<IScheduleService, ScheduleService>();
+
+            _publisherService = unityContainer.Resolve<IPublisherService>();
+            _subscriptionService = unityContainer.Resolve<ISubscriptionService>();
         }
 
         public IFluentQueueApi ForProject(string projectId)
