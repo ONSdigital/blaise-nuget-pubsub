@@ -4,6 +4,7 @@ using Blaise.Nuget.PubSub.Contracts.Enums;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Core.Interfaces;
 using Blaise.Nuget.PubSub.Core.Models;
+using System;
 using System.Collections.Generic;
 
 namespace Blaise.Nuget.PubSub.Api
@@ -47,6 +48,11 @@ namespace Blaise.Nuget.PubSub.Api
 
         public void Publish(string message, Dictionary<string, string> attributes = null)
         {
+            message.ThrowExceptionIfNullOrEmpty("message");
+
+            ValidateProjectIdIsSet();
+            ValidateTopicIdIsSet();
+
             _publisherService.PublishMessage(_projectId, _topicId, message, attributes);
         }
 
@@ -75,6 +81,22 @@ namespace Blaise.Nuget.PubSub.Api
             };
 
             _subscriptionService.Subscribe(_projectId, _subscriptionId, _messageHandler, scheduleModel);
+        }
+
+        private void ValidateProjectIdIsSet()
+        {
+            if (string.IsNullOrWhiteSpace(_projectId))
+            {
+                throw new NullReferenceException("The 'ForProject' step needs to be called prior to this");
+            }
+        }
+
+        private void ValidateTopicIdIsSet()
+        {
+            if (string.IsNullOrWhiteSpace(_topicId))
+            {
+                throw new NullReferenceException("The 'ForTopic' step needs to be called prior to this");
+            }
         }
     }
 }
