@@ -1,5 +1,4 @@
 ﻿
-using Blaise.Nuget.PubSub.Api.Interfaces;
 using Blaise.Nuget.PubSub.Contracts.Enums;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Core.Interfaces;
