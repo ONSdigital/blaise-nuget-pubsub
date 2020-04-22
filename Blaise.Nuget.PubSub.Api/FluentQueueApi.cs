@@ -1,4 +1,5 @@
 ﻿
+using Blaise.Nuget.PubSub.Api.Helpers;
 using Blaise.Nuget.PubSub.Contracts.Enums;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Core.Interfaces;
@@ -28,6 +29,8 @@ namespace Blaise.Nuget.PubSub.Api
 
         public IFluentQueueApi ForProject(string projectId)
         {
+            projectId.ThrowExceptionIfNullOrEmpty("projectId");
+
             _projectId = projectId;
 
             return this;
@@ -35,6 +38,8 @@ namespace Blaise.Nuget.PubSub.Api
 
         public IFluentPublishApi ForTopic(string topicId)
         {
+            topicId.ThrowExceptionIfNullOrEmpty("topicId");
+
             _topicId = topicId;
 
             return this;
