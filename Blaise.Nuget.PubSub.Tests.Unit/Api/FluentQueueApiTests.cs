@@ -1,4 +1,5 @@
 ﻿using Blaise.Nuget.PubSub.Api;
+using Blaise.Nuget.PubSub.Contracts.Enums;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Core.Interfaces;
 using Blaise.Nuget.PubSub.Tests.Unit.Helpers;
@@ -25,7 +26,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _schedulerServiceMock = new Mock<ISchedulerService>();
 
             _sut = new FluentQueueApi(
-                _publishServiceMock.Object, 
+                _publishServiceMock.Object,
                 _subscriptionServiceMock.Object,
                 _schedulerServiceMock.Object);
         }
@@ -226,7 +227,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
         [Test]
         public void Given_A_Null_MessageHandler_When_I_Call_Consume_Then_An_ArgumentNullException_Is_Thrown()
-        {   
+        {
             //arrange
             int numberOfMessages = 1;
 
@@ -304,6 +305,84 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             //act && assert
             var exception = Assert.Throws<NullReferenceException>(() => _sut.Now());
+            Assert.AreEqual("The 'Consume' step needs to be called prior to this", exception.Message);
+        }
+
+        [TestCase(IntervalType.Seconds)]
+        [TestCase(IntervalType.Minutes)]
+        [TestCase(IntervalType.Hours)]
+        public void Given_Previous_Steps_Are_Setup_When_I_Call_Every_Then_It_Calls_The_Correct_Service_Method(IntervalType intervalType)
+        {
+            //arrange
+            var projectId = "Project123";
+            var subscriptionId = "Subscription123";
+            int numberOfMessages = 1;
+            var messageHandler = new TestMessageHandler();
+            var intervalNumber = 1;
+
+            _schedulerServiceMock.Setup(s => s.Schedule(It.IsAny<Action>(), It.IsAny<int>(), It.IsAny<IntervalType>()));
+
+            _sut.ForProject(projectId);
+            _sut.ForSubscription(subscriptionId);
+            _sut.Consume(numberOfMessages, messageHandler);
+
+            //act
+            _sut.Every(intervalNumber, intervalType);
+
+            //assert
+            _schedulerServiceMock.Verify(v => v.Schedule(It.IsAny<Action>(), intervalNumber, intervalType));
+        }
+
+        [Test]
+        public void Given_ForProject_Has_Not_Called_In_A_Previous_Step_When_I_Call_Every_Then_A_NullReferenceExceptionIs_Thrown()
+        {
+            //arrange
+            var subscriptionId = "Subscription123";
+            int numberOfMessages = 1;
+            var messageHandler = new TestMessageHandler();
+            var intervalNumber = 1;
+            var intervalType = IntervalType.Hours;
+
+            _sut.ForSubscription(subscriptionId);
+            _sut.Consume(numberOfMessages, messageHandler);
+
+            //act && assert
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.Every(intervalNumber, intervalType));
+            Assert.AreEqual("The 'ForProject' step needs to be called prior to this", exception.Message);
+        }
+
+        [Test]
+        public void Given_ForSubscription_Has_Not_Called_In_A_Previous_Step_When_I_Call_Every_Then_A_NullReferenceExceptionIs_Thrown()
+        {
+            //arrange
+            var projectId = "Project123";
+            int numberOfMessages = 1;
+            var messageHandler = new TestMessageHandler();
+            var intervalNumber = 1;
+            var intervalType = IntervalType.Hours;
+
+            _sut.ForProject(projectId);
+            _sut.Consume(numberOfMessages, messageHandler);
+
+            //act && assert
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.Every(intervalNumber, intervalType));
+            Assert.AreEqual("The 'ForSubscription' step needs to be called prior to this", exception.Message);
+        }
+
+        [Test]
+        public void Given_Consume_Has_Not_Called_In_A_Previous_Step_When_I_Call_Every_Then_A_NullReferenceExceptionIs_Thrown()
+        {
+            //arrange
+            var projectId = "Project123";
+            var subscriptionId = "Subscription123";
+            var intervalNumber = 1;
+            var intervalType = IntervalType.Hours;
+
+            _sut.ForProject(projectId);
+            _sut.ForSubscription(subscriptionId);
+
+            //act && assert
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.Every(intervalNumber, intervalType));
             Assert.AreEqual("The 'Consume' step needs to be called prior to this", exception.Message);
         }
     }
