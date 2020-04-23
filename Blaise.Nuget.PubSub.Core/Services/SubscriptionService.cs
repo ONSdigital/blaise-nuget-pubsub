@@ -7,7 +7,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
 {
     public class SubscriptionService : ISubscriptionService
     {
-        public void Consume(string projectId, string subscriptionId, IMessageHandler messageHandler, int numberOfMessages)
+        public void Consume(string projectId, string subscriptionId, int numberOfMessages, IMessageHandler messageHandler)
         {
             var subscriberService = SubscriberServiceApiClient.Create();
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);

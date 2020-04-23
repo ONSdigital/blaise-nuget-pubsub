@@ -76,6 +76,8 @@ namespace Blaise.Nuget.PubSub.Api
 
         public IFluentSubscriptionApi ForSubscription(string subscriptionId)
         {
+            subscriptionId.ThrowExceptionIfNullOrEmpty("subscriptionId");
+
             _subscriptionId = subscriptionId;
 
             return this;
@@ -83,6 +85,8 @@ namespace Blaise.Nuget.PubSub.Api
 
         public IFluentSubscriptionApi Consume(int numberOfMessages, IMessageHandler messageHandler)
         {
+            messageHandler.ThrowExceptionIfNull("messageHandler");
+
             _numberOfMessages = numberOfMessages;
             _messageHandler = messageHandler;
 
@@ -91,13 +95,21 @@ namespace Blaise.Nuget.PubSub.Api
 
         public void Now()
         {
-            _subscriptionService.Consume(_projectId, _subscriptionId, _messageHandler, _numberOfMessages);
+            ValidateProjectIdIsSet();
+            ValidateSubscriptionIdIsSet();
+            ValidateMessageHandlerIsSet();
+
+            _subscriptionService.Consume(_projectId, _subscriptionId, _numberOfMessages, _messageHandler);
         }
 
         public void Every(int intervalNumber, IntervalType intervalType)
         {
+            ValidateProjectIdIsSet();
+            ValidateSubscriptionIdIsSet();
+            ValidateMessageHandlerIsSet();
+
             _schedulerService.Schedule(
-                () => _subscriptionService.Consume(_projectId, _subscriptionId, _messageHandler, _numberOfMessages),
+                () => _subscriptionService.Consume(_projectId, _subscriptionId, _numberOfMessages, _messageHandler),
                 intervalNumber,
                 intervalType);
         }
@@ -115,6 +127,22 @@ namespace Blaise.Nuget.PubSub.Api
             if (string.IsNullOrWhiteSpace(_topicId))
             {
                 throw new NullReferenceException("The 'ForTopic' step needs to be called prior to this");
+            }
+        }
+
+        private void ValidateSubscriptionIdIsSet()
+        {
+            if (string.IsNullOrWhiteSpace(_subscriptionId))
+            {
+                throw new NullReferenceException("The 'ForSubscription' step needs to be called prior to this");
+            }
+        }
+
+        private void ValidateMessageHandlerIsSet()
+        {
+            if (_messageHandler == null)
+            {
+                throw new NullReferenceException("The 'Consume' step needs to be called prior to this");
             }
         }
     }

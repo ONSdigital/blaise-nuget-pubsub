@@ -4,6 +4,6 @@ namespace Blaise.Nuget.PubSub.Core.Interfaces
 {
     public interface ISubscriptionService
     {
-        void Consume(string projectId, string subscriptionId, IMessageHandler messageHandler, int numberOfMessages);
+        void Consume(string projectId, string subscriptionId, int numberOfMessages, IMessageHandler messageHandler);
     }
 }
