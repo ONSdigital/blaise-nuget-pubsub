@@ -3,7 +3,6 @@ using Blaise.Nuget.PubSub.Api.Helpers;
 using Blaise.Nuget.PubSub.Contracts.Enums;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Core.Interfaces;
-using Blaise.Nuget.PubSub.Core.Models;
 using Blaise.Nuget.PubSub.Core.Services;
 using System;
 using System.Collections.Generic;
@@ -13,8 +12,9 @@ namespace Blaise.Nuget.PubSub.Api
 {
     public sealed class FluentQueueApi : IFluentQueueApi
     {
-        private readonly IPublisherService _publisherService;
+        private readonly IPublishService _publisherService;
         private readonly ISubscriptionService _subscriptionService;
+        private readonly ISchedulerService _schedulerService;
 
         private string _projectId;
         private string _topicId;
@@ -24,22 +24,26 @@ namespace Blaise.Nuget.PubSub.Api
 
         //This constructor is needed for unit testing but should not be visible from services that ingest the package
         internal FluentQueueApi(
-            IPublisherService publisherService,
-            ISubscriptionService subscriptionService)
+            IPublishService publisherService,
+            ISubscriptionService subscriptionService,
+            ISchedulerService schedulerService)
         {
             _publisherService = publisherService;
             _subscriptionService = subscriptionService;
+            _schedulerService = schedulerService;
         }
 
         public FluentQueueApi()
         {
             var unityContainer = new UnityContainer();
-            unityContainer.RegisterType<IPublisherService, PublisherService>();
+            unityContainer.RegisterType<IPublishService, PublishService>();
             unityContainer.RegisterType<ISubscriptionService, SubscriptionService>();
             unityContainer.RegisterType<ISchedulerService, SchedulerService>();
+            unityContainer.RegisterType<ICronExpressionService, CronExpressionService>();
 
-            _publisherService = unityContainer.Resolve<IPublisherService>();
+            _publisherService = unityContainer.Resolve<IPublishService>();
             _subscriptionService = unityContainer.Resolve<ISubscriptionService>();
+            _schedulerService = unityContainer.Resolve<ISchedulerService>();
         }
 
         public IFluentQueueApi ForProject(string projectId)
@@ -77,7 +81,7 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
-        public IFluentSubscriptionApi Pull(int numberOfMessages, IMessageHandler messageHandler)
+        public IFluentSubscriptionApi Consume(int numberOfMessages, IMessageHandler messageHandler)
         {
             _numberOfMessages = numberOfMessages;
             _messageHandler = messageHandler;
@@ -85,16 +89,17 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
+        public void Now()
+        {
+            _subscriptionService.Consume(_projectId, _subscriptionId, _messageHandler, _numberOfMessages);
+        }
+
         public void Every(int intervalNumber, IntervalType intervalType)
         {
-            var scheduleModel = new ScheduleModel
-            {
-                NumberOfMessages = _numberOfMessages,
-                IntervalNumber = intervalNumber,
-                IntervalType = intervalType
-            };
-
-            _subscriptionService.Subscribe(_projectId, _subscriptionId, _messageHandler, scheduleModel);
+            _schedulerService.Schedule(
+                () => _subscriptionService.Consume(_projectId, _subscriptionId, _messageHandler, _numberOfMessages),
+                intervalNumber,
+                intervalType);
         }
 
         private void ValidateProjectIdIsSet()

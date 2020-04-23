@@ -1,4 +1,6 @@
 ﻿
+using Quartz;
+
 namespace Blaise.Nuget.PubSub.Contracts.Interfaces
 {
     public interface IMessageHandler

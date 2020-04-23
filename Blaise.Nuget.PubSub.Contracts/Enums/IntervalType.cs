@@ -3,11 +3,8 @@ namespace Blaise.Nuget.PubSub.Contracts.Enums
 {
     public enum IntervalType
     {
-        Minute,
+        Seconds,
         Minutes,
-        Hour,
-        Hours,
-        Day,
-        Days
+        Hours
     }
 }

@@ -7,7 +7,9 @@ namespace Blaise.Nuget.PubSub.Contracts.Interfaces
     {
         IFluentSubscriptionApi ForSubscription(string subscriptionId);
 
-        IFluentSubscriptionApi Pull(int numberOfMessages, IMessageHandler messageHandler);
+        IFluentSubscriptionApi Consume(int numberOfMessages, IMessageHandler messageHandler);
+
+        void Now();
 
         void Every(int intervalNumber, IntervalType intervalType);
     }

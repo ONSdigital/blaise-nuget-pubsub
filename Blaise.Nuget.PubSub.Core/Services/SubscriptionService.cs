@@ -1,24 +1,19 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Core.Interfaces;
-using Blaise.Nuget.PubSub.Core.Models;
 using Google.Cloud.PubSub.V1;
+using System;
 
 namespace Blaise.Nuget.PubSub.Core.Services
 {
     public class SubscriptionService : ISubscriptionService
     {
-        private readonly ISchedulerService _schedulerService;
-
-        public SubscriptionService(ISchedulerService schedulerService)
-        {
-            _schedulerService = schedulerService;
-        }
-
-        public void Subscribe(string projectId, string subscriptionId, IMessageHandler messageHandler, ScheduleModel scheduleModel)
+        public void Consume(string projectId, string subscriptionId, IMessageHandler messageHandler, int numberOfMessages)
         {
             var subscriberService = SubscriberServiceApiClient.Create();
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
-            var response = subscriberService.Pull(subscriptionName, returnImmediately: true, maxMessages: scheduleModel.NumberOfMessages);
+            var response = subscriberService.Pull(subscriptionName, returnImmediately: true, maxMessages: numberOfMessages);
+
+            Console.WriteLine($"Number of messages available - {response.ReceivedMessages.Count}");
 
             foreach (ReceivedMessage received in response.ReceivedMessages)
             {
@@ -32,3 +27,5 @@ namespace Blaise.Nuget.PubSub.Core.Services
         }
     }
 }
+
+

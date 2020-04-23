@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Blaise.Nuget.PubSub.Contracts.Enums;
+using System;
 
 namespace Blaise.Nuget.PubSub.Core.Interfaces
 {
     public interface ISchedulerService
     {
+        void Schedule(Action action, int intervalNumber, IntervalType intervalType);
     }
 }

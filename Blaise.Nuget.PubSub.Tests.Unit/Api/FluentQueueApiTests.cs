@@ -10,18 +10,23 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 {
     public class FluentQueueApiTests
     {
-        private Mock<IPublisherService> _publishServiceMock;
+        private Mock<IPublishService> _publishServiceMock;
         private Mock<ISubscriptionService> _subscriptionServiceMock;
+        private Mock<ISchedulerService> _schedulerServiceMock;
 
         private FluentQueueApi _sut;
 
         [SetUp]
         public void SetUpTests()
         {
-            _publishServiceMock = new Mock<IPublisherService>();
+            _publishServiceMock = new Mock<IPublishService>();
             _subscriptionServiceMock = new Mock<ISubscriptionService>();
+            _schedulerServiceMock = new Mock<ISchedulerService>();
 
-            _sut = new FluentQueueApi(_publishServiceMock.Object, _subscriptionServiceMock.Object);
+            _sut = new FluentQueueApi(
+                _publishServiceMock.Object, 
+                _subscriptionServiceMock.Object,
+                _schedulerServiceMock.Object);
         }
 
         [Test]
