@@ -43,9 +43,9 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Core
         [TestCase(60, IntervalType.Minutes, "The valid range for the type 'minutes' is between 1 and 59")]
         [TestCase(61, IntervalType.Minutes, "The valid range for the type 'minutes' is between 1 and 59")]
         [TestCase(-1, IntervalType.Hours, "The valid range for the type 'hours' is between 1 and 11")]
-        //[TestCase(0, IntervalType.Hours, "The valid range for the type 'hours' is between 1 and 11")]
-        //[TestCase(12, IntervalType.Hours, "The valid range for the type 'hours' is between 1 and 11")]
-        //[TestCase(13, IntervalType.Hours, "The valid range for the type 'hours' is between 1 and 11")]
+        [TestCase(0, IntervalType.Hours, "The valid range for the type 'hours' is between 1 and 11")]
+        [TestCase(12, IntervalType.Hours, "The valid range for the type 'hours' is between 1 and 11")]
+        [TestCase(13, IntervalType.Hours, "The valid range for the type 'hours' is between 1 and 11")]
         public void Given_Invalid_Arguments_When_I_Call_GenerateCron_Then_An_ArgumentOutOfRangeException_Is_Thrown(
             int intervalNumber, IntervalType intervalType, string expectedErrorMessage)
         {

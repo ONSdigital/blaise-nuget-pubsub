@@ -18,7 +18,8 @@ namespace Blaise.Nuget.PubSub.Core.Services
             if (intervalNumber < minNumber || intervalNumber > maxNumber)
             {
                 throw new System.ArgumentOutOfRangeException(null,
-                    $"The valid range for the type '{intervalType.ToString().ToLower()}' is between {minNumber} and {maxNumber}");
+                    $"The valid range for the type '{intervalType.ToString().ToLower()}' " +
+                    $"is between {minNumber} and {maxNumber}");
             }
 
             if (intervalType == IntervalType.Seconds)
