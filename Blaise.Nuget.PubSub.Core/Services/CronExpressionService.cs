@@ -7,7 +7,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
     {
         public string GenerateCronExpression(int intervalNumber, IntervalType intervalType)
         {
-            if (intervalNumber < 0)
+            if (intervalNumber <= 0 || intervalNumber >= 60)
             {
                 throw new System.ArgumentOutOfRangeException(null,
                     "The valid range for the type 'seconds' is between 1 and 59");
