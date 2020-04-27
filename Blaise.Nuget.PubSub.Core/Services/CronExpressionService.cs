@@ -10,7 +10,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
             if (intervalNumber <= 0 || intervalNumber >= 60)
             {
                 throw new System.ArgumentOutOfRangeException(null,
-                    "The valid range for the type 'seconds' is between 1 and 59");
+                    $"The valid range for the type '{intervalType.ToString().ToLower()}' is between 1 and 59");
             }
             if (intervalType == IntervalType.Seconds)
             {
