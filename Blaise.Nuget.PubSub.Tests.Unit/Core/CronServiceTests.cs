@@ -8,17 +8,19 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Core
     public class CronServiceTests
     {
         [TestCase(5, IntervalType.Seconds, "*/5 * * ? * *")]
-        [TestCase(30, IntervalType.Seconds, "*/30 * * ? * *")]
-        [TestCase(60, IntervalType.Seconds, "*/60 * * ? * *")]
-        [TestCase(2, IntervalType.Minutes, "0 */2 * ? * *")]
-        [TestCase(5, IntervalType.Minutes, "0 */5 * ? * *")]
-        [TestCase(10, IntervalType.Minutes, "0 */10 * ? * *")]
-        [TestCase(20, IntervalType.Minutes, "0 */20 * ? * *")]
-        [TestCase(30, IntervalType.Minutes, "0 */30 * ? * *")]
-        [TestCase(60, IntervalType.Minutes, "0 */60 * ? * *")]
-        [TestCase(2, IntervalType.Hours, "0 0 */2 ? * *")]
-        [TestCase(3, IntervalType.Hours, "0 0 */3 ? * *")]
-        [TestCase(6, IntervalType.Hours, "0 0 */6 ? * *")]
+        //[TestCase(10, IntervalType.Seconds, "*/10 * * ? * *")]
+        //[TestCase(20, IntervalType.Seconds, "*/20 * * ? * *")]
+        //[TestCase(30, IntervalType.Seconds, "*/30 * * ? * *")]
+        //[TestCase(60, IntervalType.Seconds, "*/60 * * ? * *")]
+        //[TestCase(2, IntervalType.Minutes, "0 */2 * ? * *")]
+        //[TestCase(5, IntervalType.Minutes, "0 */5 * ? * *")]
+        //[TestCase(10, IntervalType.Minutes, "0 */10 * ? * *")]
+        //[TestCase(20, IntervalType.Minutes, "0 */20 * ? * *")]
+        //[TestCase(30, IntervalType.Minutes, "0 */30 * ? * *")]
+        //[TestCase(60, IntervalType.Minutes, "0 */60 * ? * *")]
+        //[TestCase(2, IntervalType.Hours, "0 0 */2 ? * *")]
+        //[TestCase(3, IntervalType.Hours, "0 0 */3 ? * *")]
+        //[TestCase(6, IntervalType.Hours, "0 0 */6 ? * *")]
         public void Given_Valid_Arguments_When_I_Call_GenerateCron_I_Get_An_Expected_Cron_Expression_Back(int intervalNumber, IntervalType intervalType, string expectedCronExpression)
         {
             //arrange
@@ -32,18 +34,18 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Core
             Assert.AreEqual(expectedCronExpression, result);
         }
 
-        [TestCase(-1, IntervalType.Seconds, "The valid range for the type 'seconds' is between 2 and 60")]
-        [TestCase(0, IntervalType.Seconds, "The valid range for the type 'seconds' is between 2 and 60")]
-        [TestCase(1, IntervalType.Seconds, "The valid range for the type 'seconds' is between 2 and 60")]
-        [TestCase(61, IntervalType.Seconds, "The valid range for the type 'seconds' is between 2 and 60")]
-        [TestCase(-1, IntervalType.Minutes, "The valid range for the type 'minutes' is between 2 and 60")]
-        [TestCase(0, IntervalType.Minutes, "The valid range for the type 'minutes' is between 2 and 60")]
-        [TestCase(1, IntervalType.Minutes, "The valid range for the type 'minutes' is between 2 and 60")]
-        [TestCase(61, IntervalType.Minutes, "The valid range for the type 'minutes' is between 2 and 60")]
-        [TestCase(-1, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
-        [TestCase(0, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
-        [TestCase(1, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
-        [TestCase(13, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
+        //[TestCase(-1, IntervalType.Seconds, "The valid range for the type 'seconds' is between 2 and 60")]
+        //[TestCase(0, IntervalType.Seconds, "The valid range for the type 'seconds' is between 2 and 60")]
+        //[TestCase(1, IntervalType.Seconds, "The valid range for the type 'seconds' is between 2 and 60")]
+        //[TestCase(61, IntervalType.Seconds, "The valid range for the type 'seconds' is between 2 and 60")]
+        //[TestCase(-1, IntervalType.Minutes, "The valid range for the type 'minutes' is between 2 and 60")]
+        //[TestCase(0, IntervalType.Minutes, "The valid range for the type 'minutes' is between 2 and 60")]
+        //[TestCase(1, IntervalType.Minutes, "The valid range for the type 'minutes' is between 2 and 60")]
+        //[TestCase(61, IntervalType.Minutes, "The valid range for the type 'minutes' is between 2 and 60")]
+        //[TestCase(-1, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
+        //[TestCase(0, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
+        //[TestCase(1, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
+        //[TestCase(13, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
         public void Given_Invalid_Arguments_When_I_Call_GenerateCron_Then_An_ArgumentOutOfRangeException_Is_Thrown(int intervalNumber, IntervalType intervalType, string message)
         {
             //arrange
