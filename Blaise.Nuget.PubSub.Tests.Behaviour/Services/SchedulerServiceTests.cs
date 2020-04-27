@@ -16,7 +16,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Setup()
         {
             _testAction = new TestSchedulerAction();
-            _sut = new SchedulerService();
+            _sut = new SchedulerService(new CronExpressionService());
         }
 
         [Test]
