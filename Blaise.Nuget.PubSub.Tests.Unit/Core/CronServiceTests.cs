@@ -46,14 +46,15 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Core
         //[TestCase(0, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
         //[TestCase(1, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
         //[TestCase(13, IntervalType.Hours, "The valid range for the type 'hours' is between 2 and 12")]
-        public void Given_Invalid_Arguments_When_I_Call_GenerateCron_Then_An_ArgumentOutOfRangeException_Is_Thrown(int intervalNumber, IntervalType intervalType, string message)
+        public void Given_Invalid_Arguments_When_I_Call_GenerateCron_Then_An_ArgumentOutOfRangeException_Is_Thrown(
+            int intervalNumber, IntervalType intervalType, string expectedErrorMessage)
         {
             //arrange
             var sut = new CronExpressionService();
 
             //act && assert
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => sut.GenerateCronExpression(intervalNumber, intervalType));
-            Assert.AreEqual(message, exception.Message);
+            Assert.AreEqual(expectedErrorMessage, exception.Message);
         }
     }
 }
