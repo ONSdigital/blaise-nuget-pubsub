@@ -7,15 +7,22 @@ namespace Blaise.Nuget.PubSub.Core.Services
     {
         public string GenerateCronExpression(int intervalNumber, IntervalType intervalType)
         {
+            if (intervalNumber < 0)
+            {
+                throw new System.ArgumentOutOfRangeException(null,
+                    "The valid range for the type 'seconds' is between 1 and 59");
+            }
             if (intervalType == IntervalType.Seconds)
             {
                 return $"*/{intervalNumber} * * ? * *";
             }
-            else if (intervalType == IntervalType.Minutes)
+            
+            if (intervalType == IntervalType.Minutes)
             {
                 return $"0 */{intervalNumber} * ? * *";
             }
-            else return $"0 0 */{intervalNumber} ? * *";
+            
+            return $"0 0 */{intervalNumber} ? * *";
         }
     }
 }
