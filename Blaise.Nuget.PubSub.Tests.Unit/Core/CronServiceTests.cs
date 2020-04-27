@@ -18,9 +18,9 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Core
         [TestCase(20, IntervalType.Minutes, "0 */20 * ? * *")]
         [TestCase(30, IntervalType.Minutes, "0 */30 * ? * *")]
         [TestCase(60, IntervalType.Minutes, "0 */60 * ? * *")]
-        //[TestCase(2, IntervalType.Hours, "0 0 */2 ? * *")]
-        //[TestCase(3, IntervalType.Hours, "0 0 */3 ? * *")]
-        //[TestCase(6, IntervalType.Hours, "0 0 */6 ? * *")]
+        [TestCase(2, IntervalType.Hours, "0 0 */2 ? * *")]
+        [TestCase(3, IntervalType.Hours, "0 0 */3 ? * *")]
+        [TestCase(6, IntervalType.Hours, "0 0 */6 ? * *")]
         public void Given_Valid_Arguments_When_I_Call_GenerateCron_I_Get_An_Expected_Cron_Expression_Back(int intervalNumber, IntervalType intervalType, string expectedCronExpression)
         {
             //arrange

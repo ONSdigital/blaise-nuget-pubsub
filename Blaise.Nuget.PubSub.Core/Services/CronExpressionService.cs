@@ -7,12 +7,15 @@ namespace Blaise.Nuget.PubSub.Core.Services
     {
         public string GenerateCronExpression(int intervalNumber, IntervalType intervalType)
         {
-            if (intervalType == IntervalType.Minutes)
+            if (intervalType == IntervalType.Seconds)
+            {
+                return $"*/{intervalNumber} * * ? * *";
+            }
+            else if (intervalType == IntervalType.Minutes)
             {
                 return $"0 */{intervalNumber} * ? * *";
             }
-
-            return $"*/{intervalNumber} * * ? * *";
+            else return $"0 0 */{intervalNumber} ? * *";
         }
     }
 }
