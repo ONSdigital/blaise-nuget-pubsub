@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
-    <id>Blaise.PubSub.Rabbit</id>
+    <id>Blaise.Nuget.PubSub</id>
 	<version>$version$</version>
     <authors>Jamie Kerr</authors>
     <owners>Jamie Kerr</owners>
@@ -9,7 +9,7 @@
     <description>API package to interact with PubSub for Blaise</description>
     <dependencies>
       <group targetFramework=".NETFramework4.7.2">
-		<dependency id="Blaise.PubSub.Rabbit.Contracts" version="$version$" />
+		<dependency id="Blaise.Nuget.PubSub.Contracts" version="$version$" />
         <dependency id="Unity" version="5.11.4" exclude="Build,Analyzers" />
         <dependency id="Google.Cloud.PubSub.V1" version="2.0.0" />
 		<dependency id="Quartz" version="2.6.2" />

@@ -10,8 +10,18 @@ namespace Blaise.Nuget.PubSub.Core.Services
 {
     public class SchedulerService : ISchedulerService
     {
+        private ICronExpressionService _cronService;
+
+        public SchedulerService(ICronExpressionService cronService)
+        {
+            _cronService = cronService;
+        }
+
         public void Schedule(Action action, int intervalNumber, IntervalType intervalType)
         {
+
+            var cronExpression = _cronService.GenerateCronExpression(intervalNumber, intervalType);
+
             var scheduler = GetScheduler();
             var job = CreateJob();
             var trigger = CreateTrigger(intervalNumber, intervalType);

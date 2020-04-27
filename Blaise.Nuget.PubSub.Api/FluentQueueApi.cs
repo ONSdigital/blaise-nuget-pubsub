@@ -12,7 +12,7 @@ namespace Blaise.Nuget.PubSub.Api
 {
     public sealed class FluentQueueApi : IFluentQueueApi
     {
-        private readonly IPublishService _publisherService;
+        private readonly IPublishService _publishService;
         private readonly ISubscriptionService _subscriptionService;
         private readonly ISchedulerService _schedulerService;
 
@@ -24,11 +24,11 @@ namespace Blaise.Nuget.PubSub.Api
 
         //This constructor is needed for unit testing but should not be visible from services that ingest the package
         internal FluentQueueApi(
-            IPublishService publisherService,
+            IPublishService publishService,
             ISubscriptionService subscriptionService,
             ISchedulerService schedulerService)
         {
-            _publisherService = publisherService;
+            _publishService = publishService;
             _subscriptionService = subscriptionService;
             _schedulerService = schedulerService;
         }
@@ -41,7 +41,7 @@ namespace Blaise.Nuget.PubSub.Api
             unityContainer.RegisterType<ISchedulerService, SchedulerService>();
             unityContainer.RegisterType<ICronExpressionService, CronExpressionService>();
 
-            _publisherService = unityContainer.Resolve<IPublishService>();
+            _publishService = unityContainer.Resolve<IPublishService>();
             _subscriptionService = unityContainer.Resolve<ISubscriptionService>();
             _schedulerService = unityContainer.Resolve<ISchedulerService>();
         }
@@ -71,7 +71,7 @@ namespace Blaise.Nuget.PubSub.Api
             ValidateProjectIdIsSet();
             ValidateTopicIdIsSet();
 
-            _publisherService.PublishMessage(_projectId, _topicId, message, attributes);
+            _publishService.PublishMessage(_projectId, _topicId, message, attributes);
         }
 
         public IFluentSubscriptionApi ForSubscription(string subscriptionId)
