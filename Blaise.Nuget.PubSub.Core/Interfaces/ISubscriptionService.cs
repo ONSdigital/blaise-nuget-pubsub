@@ -1,9 +1,12 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
+using System;
 
 namespace Blaise.Nuget.PubSub.Core.Interfaces
 {
     public interface ISubscriptionService
     {
-        void Consume(string projectId, string subscriptionId, int numberOfMessages, IMessageHandler messageHandler);
+        void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler);
+
+        void StopConsuming();
     }
 }
