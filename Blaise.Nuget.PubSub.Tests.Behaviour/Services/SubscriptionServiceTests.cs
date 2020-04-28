@@ -1,5 +1,4 @@
-﻿using Blaise.Nuget.PubSub.Core.Interfaces;
-using Blaise.Nuget.PubSub.Core.Services;
+﻿using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
@@ -13,7 +12,12 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _topicId;
         private string _subscriptionId;
         private TestMessageHandler _messageHandler;
-        private ISubscriptionService _sut;
+        private SubscriptionService _sut;
+
+        public SubscriptionServiceTests()
+        {
+            AuthorizationHelper.SetupGoogleAuthCredentials();
+        }
 
         [SetUp]
         public void Setup()
@@ -23,8 +27,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _subscriptionId = "blaise-nuget-subscription";
             _messageHandler = new TestMessageHandler();
             _sut = new SubscriptionService();
-
-            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", @"C:\Users\Jamie\source\ons-blaise-dev-adb1a24f1dbd.json");
         }
 
         [Test]

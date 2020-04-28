@@ -16,6 +16,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private TestMessageHandler _messageHandler;
         private FluentQueueApi _sut;
 
+        public FluentApiSubscriptionTests()
+        {
+            AuthorizationHelper.SetupGoogleAuthCredentials();
+        }
+
         [SetUp]
         public void Setup()
         {
@@ -24,8 +29,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _subscriptionId = "blaise-nuget-subscription";
             _messageHandler = new TestMessageHandler();
             _sut = new FluentQueueApi();
-
-            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", @"C:\Users\Jamie\source\ons-blaise-dev-adb1a24f1dbd.json");
         }
 
         [Test]
