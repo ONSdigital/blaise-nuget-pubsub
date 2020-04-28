@@ -7,20 +7,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
     {
         public string GenerateCronExpression(int intervalNumber, IntervalType intervalType)
         {
-            var minNumber = 1;
-            var maxNumber = 59;
-
-            if (intervalType == IntervalType.Hours)
-            {
-                maxNumber = 11;
-            }
-
-            if (intervalNumber < minNumber || intervalNumber > maxNumber)
-            {
-                throw new System.ArgumentOutOfRangeException(null,
-                    $"The valid range for the type '{intervalType.ToString().ToLower()}' " +
-                    $"is between {minNumber} and {maxNumber}");
-            }
+            ValidateIntervalValuesAreInRange(intervalNumber, intervalType);
 
             if (intervalType == IntervalType.Seconds)
             {
@@ -33,6 +20,19 @@ namespace Blaise.Nuget.PubSub.Core.Services
             }
             
             return $"0 0 */{intervalNumber} ? * *";
+        }
+
+        private void ValidateIntervalValuesAreInRange(int intervalNumber, IntervalType intervalType)
+        {
+            var minNumber = 1;
+            var maxNumber = intervalType == IntervalType.Hours ? 11 : 59;
+
+            if (intervalNumber < minNumber || intervalNumber > maxNumber)
+            {
+                throw new System.ArgumentOutOfRangeException(null,
+                    $"The valid range for the type '{intervalType.ToString().ToLower()}' " +
+                    $"is between '{minNumber}' and '{maxNumber}'");
+            }
         }
     }
 }

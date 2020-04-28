@@ -61,7 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\FluentQueueApiTests.cs" />
-    <Compile Include="Core\CronServiceTests.cs" />
+    <Compile Include="Core\CronExpressionServiceTests.cs" />
     <Compile Include="Helpers\TestMessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
