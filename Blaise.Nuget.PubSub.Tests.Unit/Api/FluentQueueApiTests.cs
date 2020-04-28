@@ -15,7 +15,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         private Mock<IPublishService> _publishServiceMock;
         private Mock<ISubscriptionService> _subscriptionServiceMock;
 
-        private FluentQueueApi _sut;
+        private IFluentQueueApi _sut;
 
         [SetUp]
         public void SetUpTests()

@@ -1,4 +1,5 @@
-﻿using Blaise.Nuget.PubSub.Core.Services;
+﻿using Blaise.Nuget.PubSub.Core.Interfaces;
+using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
@@ -12,7 +13,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _topicId;
         private string _subscriptionId;
         private TestMessageHandler _messageHandler;
-        private SubscriptionService _sut;
+        private ISubscriptionService _sut;
 
         [SetUp]
         public void Setup()
