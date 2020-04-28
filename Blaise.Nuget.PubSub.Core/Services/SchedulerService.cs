@@ -46,12 +46,12 @@ namespace Blaise.Nuget.PubSub.Core.Services
 
         private ITrigger CreateTrigger(int intervalNumber, IntervalType intervalType)
         {
+            var cronExpression = _cronService.GenerateCronExpression(intervalNumber, intervalType);
+
             return TriggerBuilder.Create()
                      .WithIdentity("subscriptionJobTrigger", "subscriptionJobTriggerGroup")
                      .StartNow()
-                     .WithSimpleSchedule(x => x
-                         .WithIntervalInSeconds(10)
-                         .RepeatForever())
+                     .WithCronSchedule(cronExpression)
                      .Build();
         }
     }

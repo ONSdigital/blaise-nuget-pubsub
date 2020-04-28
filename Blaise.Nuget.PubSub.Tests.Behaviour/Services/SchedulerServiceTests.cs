@@ -19,18 +19,18 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _sut = new SchedulerService(new CronExpressionService());
         }
 
-        [Test]
-        public void Given_Give_I_Schedule_An_Action_Then_The_Action_Is_Executed_Per_The_Schedule()
+        [TestCase(10, 4, 30000)]
+        [TestCase(20, 2, 30000)]
+        public void Given_Give_I_Schedule_An_Action_Then_The_Action_Is_Executed_Per_The_Schedule(
+            int intervalNumber, IntervalType intervalType, int sleepTimer)
         {
             //arrange
-            var intervalNumber = 10;
-            var intervalType = IntervalType.Seconds;
             var scheduledDateTime = DateTime.Now;
 
             //act
             _sut.Schedule(() => _testAction.LogAction(scheduledDateTime), intervalNumber, intervalType);
 
-            Thread.Sleep(30000);
+            Thread.Sleep(sleepTimer);
 
             //assert
             Assert.IsNotNull(_testAction.ActionsIntervalLogged);
