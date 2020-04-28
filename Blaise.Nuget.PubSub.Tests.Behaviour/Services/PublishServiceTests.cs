@@ -103,7 +103,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_A_Topic_Doesnt_Exist_When_I_Call_CreateTopic_The_An_Exception_Is_Not_Thrown()
+        public void Given_A_Topic_Doesnt_Exist_When_I_Call_DeleteTopic_The_An_Exception_Is_Not_Thrown()
         {
             //arrange
             var topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";

@@ -46,9 +46,13 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
-        public IFluentPublishApi ForTopic(string topicId)
+        public IFluentQueueApi ForTopic(string topicId)
         {
             topicId.ThrowExceptionIfNullOrEmpty("topicId");
+
+            ValidateProjectIdIsSet();
+
+            _publishService.CreateTopic(_projectId, topicId);
 
             _topicId = topicId;
 
@@ -59,7 +63,6 @@ namespace Blaise.Nuget.PubSub.Api
         {
             message.ThrowExceptionIfNullOrEmpty("message");
 
-            ValidateProjectIdIsSet();
             ValidateTopicIdIsSet();
 
             _publishService.PublishMessage(_projectId, _topicId, message, attributes);
@@ -69,6 +72,9 @@ namespace Blaise.Nuget.PubSub.Api
         {
             subscriptionId.ThrowExceptionIfNullOrEmpty("subscriptionId");
 
+            ValidateTopicIdIsSet();
+
+            _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId);
             _subscriptionId = subscriptionId;
 
             return this;
@@ -76,7 +82,6 @@ namespace Blaise.Nuget.PubSub.Api
 
         public void StartConsuming(IMessageHandler messageHandler)
         {
-            ValidateProjectIdIsSet();
             ValidateSubscriptionIdIsSet();
 
             messageHandler.ThrowExceptionIfNull("messageHandler");

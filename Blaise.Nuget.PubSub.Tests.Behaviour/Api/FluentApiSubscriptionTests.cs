@@ -14,6 +14,9 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _topicId;
         private string _subscriptionId;
         private TestMessageHandler _messageHandler;
+        private PublishService _PublishService;
+        private SubscriptionService _subscriptionService;
+
         private FluentQueueApi _sut;
 
         public FluentApiSubscriptionTests()
@@ -23,12 +26,26 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
         [SetUp]
         public void Setup()
-        {
-            _projectId = "ons-blaise-dev";
-            _topicId = "blaise-nuget-topic";
-            _subscriptionId = "blaise-nuget-subscription";
+        {  
             _messageHandler = new TestMessageHandler();
+            _PublishService = new PublishService();
+            _subscriptionService = new SubscriptionService();
+
+            _projectId = "ons-blaise-dev";
+            _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+
+            _PublishService.CreateTopic(_projectId, _topicId);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId);
+
             _sut = new FluentQueueApi();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _subscriptionService.DeleteSubscription(_projectId, _subscriptionId);
+            _PublishService.DeleteTopic(_projectId, _topicId);
         }
 
         [Test]
@@ -41,6 +58,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //act
             _sut
                 .ForProject(_projectId)
+                .ForTopic(_topicId)
                 .ForSubscription(_subscriptionId)
                 .StartConsuming(_messageHandler);
 
@@ -67,6 +85,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //act
             _sut
                 .ForProject(_projectId)
+                .ForTopic(_topicId)
                 .ForSubscription(_subscriptionId)
                 .StartConsuming(_messageHandler);
 
@@ -92,8 +111,10 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
         private void PublishMessage(string message)
         {
-            var publishService = new PublishService();
-            publishService.PublishMessage(_projectId, _topicId, message);
+            _sut
+                .ForProject(_projectId)
+                .ForTopic(_topicId)
+                .Publish(message);
         }
     }
 }

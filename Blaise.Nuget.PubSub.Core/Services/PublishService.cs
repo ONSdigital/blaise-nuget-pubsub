@@ -24,14 +24,6 @@ namespace Blaise.Nuget.PubSub.Core.Services
             _publisherServiceClient.Publish(topicName, new[] { pubsubMessage });
         }
 
-        public bool TopicExists(string projectId, string topicId)
-        {
-            var projectName = new ProjectName(projectId);
-            var topics = _publisherServiceClient.ListTopics(projectName);
-
-            return topics.Any(t => t.TopicName.TopicId == topicId);
-        }
-
         public void CreateTopic(string projectId, string topicId)
         {
             if(TopicExists(projectId, topicId))
@@ -43,6 +35,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
             _publisherServiceClient.CreateTopic(topicName);
         }
 
+
         public void DeleteTopic(string projectId, string topicId)
         {
             if (!TopicExists(projectId, topicId))
@@ -52,6 +45,14 @@ namespace Blaise.Nuget.PubSub.Core.Services
 
             var topicName = new TopicName(projectId, topicId);
             _publisherServiceClient.DeleteTopic(topicName);
+        }
+
+        public bool TopicExists(string projectId, string topicId)
+        {
+            var projectName = new ProjectName(projectId);
+            var topics = _publisherServiceClient.ListTopics(projectName);
+
+            return topics.Any(t => t.TopicName.TopicId == topicId);
         }
 
         private PubsubMessage BuildPubsubMessage(string message, Dictionary<string, string> attributes)

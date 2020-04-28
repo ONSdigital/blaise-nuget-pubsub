@@ -1,8 +1,11 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Core.Interfaces;
+using Google.Api.Gax.Grpc;
+using Google.Api.Gax.ResourceNames;
 using Google.Cloud.PubSub.V1;
 using Nito.AsyncEx.Synchronous;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,6 +14,12 @@ namespace Blaise.Nuget.PubSub.Core.Services
     public class SubscriptionService : ISubscriptionService
     {
         private SubscriberClient _subscriberClient;
+        private SubscriberServiceApiClient _subscriberServiceClient;
+
+        public SubscriptionService()
+        {
+            _subscriberServiceClient = SubscriberServiceApiClient.Create();
+        }
 
         public void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler)
         {
@@ -22,6 +31,37 @@ namespace Blaise.Nuget.PubSub.Core.Services
         {
             var cancelSubscriptionTask = CancelSubscriptionAsync();
             cancelSubscriptionTask.WaitAndUnwrapException();
+        }
+
+        public void CreateSubscription(string projectId, string topicId, string subscriptionId, int ackDeadlineInSeconds = 600)
+        {
+            if (SubscriptionExists(projectId, subscriptionId))
+            {
+                return;
+            }
+
+            var subscriptionName = new SubscriptionName(projectId, subscriptionId);
+            var topicName = new TopicName(projectId, topicId);
+            _subscriberServiceClient.CreateSubscription(subscriptionName, topicName, pushConfig: null, ackDeadlineSeconds: ackDeadlineInSeconds);
+        }
+
+        public void DeleteSubscription(string projectId, string subscriptionId)
+        {
+            if (!SubscriptionExists(projectId, subscriptionId))
+            {
+                return;
+            }
+
+            var subscriptionName = new SubscriptionName(projectId, subscriptionId);
+            _subscriberServiceClient.DeleteSubscription(subscriptionName);
+        }
+
+        public bool SubscriptionExists(string projectId, string subscriptionId)
+        {
+            var projectName = new ProjectName(projectId);
+            var subscriptions = _subscriberServiceClient.ListSubscriptions(projectName);
+
+            return subscriptions.Any(s => s.SubscriptionName.SubscriptionId == subscriptionId);
         }
 
         private async Task CreateSubscriptionAsync(string projectId, string subscriptionId, IMessageHandler messageHandler)
