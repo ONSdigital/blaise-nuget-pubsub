@@ -1,17 +1,16 @@
-﻿using Blaise.Nuget.PubSub.Core.Interfaces;
-using Blaise.Nuget.PubSub.Core.Services;
+﻿using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
-    public class PublishServiceTests
+    public class TopicServiceTests
     {
         private string _projectId;
 
-        private PublishService _sut;
+        private TopicService _sut;
 
-        public PublishServiceTests()
+        public TopicServiceTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
@@ -20,7 +19,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Setup()
         {
             _projectId = "ons-blaise-dev";         
-            _sut = new PublishService();            
+            _sut = new TopicService();            
         }
 
         [Test]

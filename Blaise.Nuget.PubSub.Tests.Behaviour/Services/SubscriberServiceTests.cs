@@ -1,6 +1,4 @@
-﻿
-using Blaise.Nuget.PubSub.Api;
-using Blaise.Nuget.PubSub.Core.Services;
+﻿using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
@@ -8,37 +6,40 @@ using System.Threading;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
-    public class FluentApiSubscriptionTests
+    public class SubscriberServiceTests
     {
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
+
         private TestMessageHandler _messageHandler;
-        private SubscriptionService _subscriptionService;
         private TopicService _topicService;
+        private SubscriptionService _subscriptionService;
+        private PublisherService _publisherService;
 
-        private FluentQueueApi _sut;
+        private SubscriberService _sut;
 
-        public FluentApiSubscriptionTests()
+        public SubscriberServiceTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
 
         [SetUp]
         public void Setup()
-        {  
-            _messageHandler = new TestMessageHandler();
-            _subscriptionService = new SubscriptionService();
-            _topicService = new TopicService();
-
+        {
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
 
+            _messageHandler = new TestMessageHandler();
+            _topicService = new TopicService();
+            _subscriptionService = new SubscriptionService();
+            _publisherService = new PublisherService();
+
             _topicService.CreateTopic(_projectId, _topicId);
             _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId);
 
-            _sut = new FluentQueueApi();
+            _sut = new SubscriberService();
         }
 
         [TearDown]
@@ -49,45 +50,19 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_There_Is_One_Message_Available_When_I_Call_StartConsuming_Using_FluentApi_For_One_Message_Then_The_Message_Is_Handled()
-        {
-            //arrange
-            var message = $"Hello, world {Guid.NewGuid()}";
-            PublishMessage(message);
-
-            //act
-            _sut
-                .ForProject(_projectId)
-                .ForTopic(_topicId)
-                .ForSubscription(_subscriptionId)
-                .StartConsuming(_messageHandler);
-
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
-
-            _sut.StopConsuming();
-
-            //assert
-            Assert.IsNotNull(_messageHandler.MessagesHandled);
-            Assert.AreEqual(1, _messageHandler.MessagesHandled.Count);
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message));
-        }
-
-        [Test]
-        public void Given_There_Are_Two_Message_Available_When_I_Call_StartConsuming_Using_FluentApi_For_All_Messages_Then_All_Messages_Are_Handled()
+        public void Given_Three_Messages_Are_Available_When_I_Call_StartConsuming_Then_The_Three_Messages_Are_Processed()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
             var message2 = $"Why, Hello {Guid.NewGuid()}";
+            var message3 = $"Yo, Yo {Guid.NewGuid()}";
 
             PublishMessage(message1);
             PublishMessage(message2);
+            PublishMessage(message3);
 
             //act
-            _sut
-                .ForProject(_projectId)
-                .ForTopic(_topicId)
-                .ForSubscription(_subscriptionId)
-                .StartConsuming(_messageHandler);
+            _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler);
 
             Thread.Sleep(5000); // allow time for processing the messages off the queue
 
@@ -95,9 +70,10 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
             //assert
             Assert.IsNotNull(_messageHandler.MessagesHandled);
-            Assert.AreEqual(2, _messageHandler.MessagesHandled.Count);
+            Assert.AreEqual(3, _messageHandler.MessagesHandled.Count);
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message2));
+            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message3));
         }
 
         [Test]
@@ -108,13 +84,10 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             Assert.AreEqual("No subscriptons have been setup", exception.Message);
 
         }
-
+     
         private void PublishMessage(string message)
         {
-            _sut
-                .ForProject(_projectId)
-                .ForTopic(_topicId)
-                .Publish(message);
+            _publisherService.PublishMessage(_projectId, _topicId, message);
         }
     }
 }

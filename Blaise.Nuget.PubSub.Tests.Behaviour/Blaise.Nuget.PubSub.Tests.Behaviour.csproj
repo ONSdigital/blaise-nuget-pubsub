@@ -119,8 +119,10 @@
     <Compile Include="Helpers\AuthorizationHelper.cs" />
     <Compile Include="Helpers\TestMessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\SubscriberServiceTests.cs" />
+    <Compile Include="Services\TopicServiceTests.cs" />
     <Compile Include="Services\SubscriptionServiceTests.cs" />
-    <Compile Include="Services\PublishServiceTests.cs" />
+    <Compile Include="Services\PublisherServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Blaise.Nuget.PubSub.Api\Blaise.Nuget.PubSub.Api.csproj">

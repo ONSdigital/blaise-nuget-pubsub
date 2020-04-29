@@ -11,8 +11,10 @@ namespace Blaise.Nuget.PubSub.Api
 {
     public sealed class FluentQueueApi : IFluentQueueApi
     {
-        private readonly IPublishService _publishService;
+        private readonly IPublisherService _publisherService;
         private readonly ISubscriptionService _subscriptionService;
+        private readonly ITopicService _topicService;
+        private readonly ISubscriberService _subscriberService;
 
         private string _projectId;
         private string _topicId;
@@ -20,21 +22,29 @@ namespace Blaise.Nuget.PubSub.Api
 
         //This constructor is needed for unit testing but should not be visible from services that ingest the package
         internal FluentQueueApi(
-            IPublishService publishService,
-            ISubscriptionService subscriptionService)
+            IPublisherService publisherService,
+            ISubscriptionService subscriptionService,
+            ITopicService topicService,
+            ISubscriberService subscriberService)
         {
-            _publishService = publishService;
+            _publisherService = publisherService;
             _subscriptionService = subscriptionService;
+            _topicService = topicService;
+            _subscriberService = subscriberService;
         }
 
         public FluentQueueApi()
         {
             var unityContainer = new UnityContainer();
-            unityContainer.RegisterType<IPublishService, PublishService>();
+            unityContainer.RegisterType<IPublisherService, PublisherService>();
             unityContainer.RegisterType<ISubscriptionService, SubscriptionService>();
+            unityContainer.RegisterType<ITopicService, TopicService>();
+            unityContainer.RegisterType<ISubscriberService, SubscriberService>();
 
-            _publishService = unityContainer.Resolve<IPublishService>();
+            _publisherService = unityContainer.Resolve<IPublisherService>();
             _subscriptionService = unityContainer.Resolve<ISubscriptionService>();
+            _topicService = unityContainer.Resolve<ITopicService>();
+            _subscriberService = unityContainer.Resolve<ISubscriberService>();
         }
 
         public IFluentQueueApi ForProject(string projectId)
@@ -52,7 +62,7 @@ namespace Blaise.Nuget.PubSub.Api
 
             ValidateProjectIdIsSet();
 
-            _publishService.CreateTopic(_projectId, topicId);
+            _topicService.CreateTopic(_projectId, topicId);
 
             _topicId = topicId;
 
@@ -65,7 +75,7 @@ namespace Blaise.Nuget.PubSub.Api
 
             ValidateTopicIdIsSet();
 
-            _publishService.PublishMessage(_projectId, _topicId, message, attributes);
+            _publisherService.PublishMessage(_projectId, _topicId, message, attributes);
         }
 
         public IFluentSubscriptionApi ForSubscription(string subscriptionId)
@@ -86,12 +96,12 @@ namespace Blaise.Nuget.PubSub.Api
 
             messageHandler.ThrowExceptionIfNull("messageHandler");
 
-            _subscriptionService.StartConsuming(_projectId, _subscriptionId, messageHandler);
+            _subscriberService.StartConsuming(_projectId, _subscriptionId, messageHandler);
         }
 
         public void StopConsuming()
         {
-            _subscriptionService.StopConsuming();
+            _subscriberService.StopConsuming();
         }
 
         private void ValidateProjectIdIsSet()

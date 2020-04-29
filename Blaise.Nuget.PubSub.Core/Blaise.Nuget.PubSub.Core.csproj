@@ -148,11 +148,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Interfaces\IPublishService.cs" />
+    <Compile Include="Interfaces\IPublisherService.cs" />
+    <Compile Include="Interfaces\ISubscriberService.cs" />
     <Compile Include="Interfaces\ISubscriptionService.cs" />
+    <Compile Include="Interfaces\ITopicService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\PublishService.cs" />
+    <Compile Include="Services\PublisherService.cs" />
+    <Compile Include="Services\SubscriberService.cs" />
     <Compile Include="Services\SubscriptionService.cs" />
+    <Compile Include="Services\TopicService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

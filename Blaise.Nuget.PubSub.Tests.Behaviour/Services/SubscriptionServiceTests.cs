@@ -2,7 +2,6 @@
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
-using System.Threading;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
@@ -11,8 +10,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _projectId;
         private string _topicId;
 
-        private TestMessageHandler _messageHandler;
-        private PublishService _publishService;
+        private TopicService _topicService;
 
         private SubscriptionService _sut;
 
@@ -27,10 +25,9 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
 
-            _messageHandler = new TestMessageHandler();
-            _publishService = new PublishService();
+            _topicService = new TopicService();
 
-            _publishService.CreateTopic(_projectId, _topicId);
+            _topicService.CreateTopic(_projectId, _topicId);
 
             _sut = new SubscriptionService();
         }
@@ -38,49 +35,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         [TearDown]
         public void TearDown()
         {
-            _publishService.DeleteTopic(_projectId, _topicId);
-            _sut = new SubscriptionService();
-        }
-
-        [Test]
-        public void Given_Three_Messages_Are_Available_When_I_Call_StartConsuming_Then_The_Three_Messages_Are_Processed()
-        {
-            //arrange
-            var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            _sut.CreateSubscription(_projectId, _topicId, subscriptionId);
-
-            var message1 = $"Hello, world {Guid.NewGuid()}";
-            var message2 = $"Why, Hello {Guid.NewGuid()}";
-            var message3 = $"Yo, Yo {Guid.NewGuid()}";
-
-            PublishMessage(message1);
-            PublishMessage(message2);
-            PublishMessage(message3);
-
-            //act
-            _sut.StartConsuming(_projectId, subscriptionId, _messageHandler);
-
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
-
-            _sut.StopConsuming();
-            _sut.DeleteSubscription(_projectId, subscriptionId);
-
-            //assert
-            Assert.IsNotNull(_messageHandler.MessagesHandled);
-            Assert.AreEqual(3, _messageHandler.MessagesHandled.Count);
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message2));
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message3));
-        }
-
-        [Test]
-        public void Given_No_Subscriptions_When_I_Call_StopConsuming_Then_InvalidOperationException_Is_Thrown()
-        {
-            //act && assert
-            var exception = Assert.Throws<InvalidOperationException>(() => _sut.StopConsuming());
-            Assert.AreEqual("No subscriptons have been setup", exception.Message);
-
-        }
+            _topicService.DeleteTopic(_projectId, _topicId);
+        }    
 
         [Test]
         public void Given_A_Subscription_Doesnt_Exist_When_I_Call_SubscriptionExists_Then_False_Is_Returned()
@@ -170,11 +126,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
             //act && assert
             _sut.DeleteSubscription(_projectId, subscriptionId);
-        }
-
-        private void PublishMessage(string message)
-        {
-            _publishService.PublishMessage(_projectId, _topicId, message);
         }
     }
 }

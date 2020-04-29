@@ -12,20 +12,26 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 {
     public class FluentQueueApiTests
     {
-        private Mock<IPublishService> _publishServiceMock;
+        private Mock<IPublisherService> _publisherServiceMock;
         private Mock<ISubscriptionService> _subscriptionServiceMock;
+        private Mock<ITopicService> _topicServiceMock;
+        private Mock<ISubscriberService> _subscriberServiceMock;
 
         private IFluentQueueApi _sut;
 
         [SetUp]
         public void SetUpTests()
         {
-            _publishServiceMock = new Mock<IPublishService>();
+            _publisherServiceMock = new Mock<IPublisherService>();
             _subscriptionServiceMock = new Mock<ISubscriptionService>();
+            _topicServiceMock = new Mock<ITopicService>();
+            _subscriberServiceMock = new Mock<ISubscriberService>();
 
             _sut = new FluentQueueApi(
-                _publishServiceMock.Object,
-                _subscriptionServiceMock.Object);
+                _publisherServiceMock.Object,
+                _subscriptionServiceMock.Object,
+                _topicServiceMock.Object,
+                _subscriberServiceMock.Object);
         }
 
         [Test]
@@ -84,7 +90,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var projectId = "Project123";
             var topicId = "Topic123";
 
-            _publishServiceMock.Setup(p => p.CreateTopic(It.IsAny<string>(), It.IsAny<string>()));
+            _topicServiceMock.Setup(p => p.CreateTopic(It.IsAny<string>(), It.IsAny<string>()));
             
             _sut.ForProject(projectId);
 
@@ -92,7 +98,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.ForTopic(topicId);
 
             //assert
-            _publishServiceMock.Verify(v => v.CreateTopic(projectId, topicId));
+            _topicServiceMock.Verify(v => v.CreateTopic(projectId, topicId));
         }
 
         [Test]
@@ -131,7 +137,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var message = "Message123";
             var attributes = new Dictionary<string, string>();
 
-            _publishServiceMock.Setup(p => p.PublishMessage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()));
+            _publisherServiceMock.Setup(p => p.PublishMessage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()));
 
             _sut.ForProject(projectId);
             _sut.ForTopic(topicId);
@@ -140,7 +146,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.Publish(message, attributes);
 
             //assert
-            _publishServiceMock.Verify(v => v.PublishMessage(projectId, topicId, message, attributes));
+            _publisherServiceMock.Verify(v => v.PublishMessage(projectId, topicId, message, attributes));
         }
 
         [Test]
@@ -151,7 +157,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var topicId = "Topic123";
             var message = "Message123";
 
-            _publishServiceMock.Setup(p => p.PublishMessage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()));
+            _publisherServiceMock.Setup(p => p.PublishMessage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()));
 
             _sut.ForProject(projectId);
             _sut.ForTopic(topicId);
@@ -160,7 +166,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.Publish(message);
 
             //assert
-            _publishServiceMock.Verify(v => v.PublishMessage(projectId, topicId, message, null));
+            _publisherServiceMock.Verify(v => v.PublishMessage(projectId, topicId, message, null));
         }
 
         [Test]
@@ -291,7 +297,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var messageHandler = new TestMessageHandler();
 
 
-            _subscriptionServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IMessageHandler>()));
+            _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IMessageHandler>()));
 
             _sut.ForProject(projectId);
             _sut.ForTopic(topicId);
@@ -301,7 +307,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.StartConsuming(messageHandler);
 
             //assert
-            _subscriptionServiceMock.Verify(v => v.StartConsuming(projectId, subscriptionId, messageHandler));
+            _subscriberServiceMock.Verify(v => v.StartConsuming(projectId, subscriptionId, messageHandler));
         }
 
         [Test]
@@ -322,13 +328,13 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_A_Subsription_When_I_Call_Consume_Then_It_Calls_The_Correct_Service_Method()
         {
             //arrange
-            _subscriptionServiceMock.Setup(s => s.StopConsuming());
+            _subscriberServiceMock.Setup(s => s.StopConsuming());
 
             //act
             _sut.StopConsuming();
 
             //assert
-            _subscriptionServiceMock.Verify(v => v.StopConsuming());
+            _subscriberServiceMock.Verify(v => v.StopConsuming());
         }
     }
 }
