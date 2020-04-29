@@ -78,13 +78,13 @@ namespace Blaise.Nuget.PubSub.Api
             _publisherService.PublishMessage(_projectId, _topicId, message, attributes);
         }
 
-        public IFluentSubscriptionApi ForSubscription(string subscriptionId)
+        public IFluentSubscriptionApi ForSubscription(string subscriptionId, int ackDeadlineInSeconds = 60)
         {
             subscriptionId.ThrowExceptionIfNullOrEmpty("subscriptionId");
 
             ValidateTopicIdIsSet();
 
-            _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, ackDeadlineInSeconds);
             _subscriptionId = subscriptionId;
 
             return this;

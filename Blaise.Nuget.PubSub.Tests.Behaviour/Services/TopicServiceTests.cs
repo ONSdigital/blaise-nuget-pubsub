@@ -7,6 +7,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
     public class TopicServiceTests
     {
         private string _projectId;
+        private string _topicId;
 
         private TopicService _sut;
 
@@ -18,8 +19,19 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         [SetUp]
         public void Setup()
         {
-            _projectId = "ons-blaise-dev";         
+            _projectId = "ons-blaise-dev";
+            _topicId = string.Empty;
+
             _sut = new TopicService();            
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (!string.IsNullOrEmpty(_topicId))
+            {
+                _sut.DeleteTopic(_projectId, _topicId);
+            }           
         }
 
         [Test]
@@ -41,13 +53,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Given_A_Topic_Exists_When_I_Call_TopicExists_Then_True_Is_Returned()
         {
             //arrange
-            var topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            _sut.CreateTopic(_projectId, topicId);
+            _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            _sut.CreateTopic(_projectId, _topicId);
 
             //act
-            var result = _sut.TopicExists(_projectId, topicId);
-
-            _sut.DeleteTopic(_projectId, topicId);
+            var result = _sut.TopicExists(_projectId, _topicId);
 
             //assert
             Assert.IsNotNull(result);
@@ -59,30 +69,27 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Given_A_Topic_Doesnt_Exist_When_I_Call_CreateTopic_The_Topic_Is_Created()
         {
             //arrange
-            var topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            Assert.IsFalse(_sut.TopicExists(_projectId, topicId));
+            _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            Assert.IsFalse(_sut.TopicExists(_projectId, _topicId));
 
             //act
-            _sut.CreateTopic(_projectId, topicId);
+            _sut.CreateTopic(_projectId, _topicId);
 
             //assert
-            Assert.IsTrue(_sut.TopicExists(_projectId, topicId));
-
-            _sut.DeleteTopic(_projectId, topicId);
+            Assert.IsTrue(_sut.TopicExists(_projectId, _topicId));
         }
 
         [Test]
         public void Given_A_Topic_Exists_When_I_Call_CreateTopic_The_An_Exception_Is_Not_Thrown()
         {
             //arrange
-            var topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
 
-            _sut.CreateTopic(_projectId, topicId);
-            Assert.IsTrue(_sut.TopicExists(_projectId, topicId));
+            _sut.CreateTopic(_projectId, _topicId);
+            Assert.IsTrue(_sut.TopicExists(_projectId, _topicId));
 
             //act && assert
-            _sut.CreateTopic(_projectId, topicId);
-            _sut.DeleteTopic(_projectId, topicId);
+            _sut.CreateTopic(_projectId, _topicId);
         }
 
         [Test]

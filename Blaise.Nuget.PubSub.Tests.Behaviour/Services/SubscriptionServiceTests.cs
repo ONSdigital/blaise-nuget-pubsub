@@ -9,6 +9,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
     {
         private string _projectId;
         private string _topicId;
+        private string _subscriptionId;
+        private int _ackDeadlineInSeconds;
 
         private TopicService _topicService;
 
@@ -24,6 +26,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         {
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            _subscriptionId = string.Empty;
+            _ackDeadlineInSeconds = 60;
 
             _topicService = new TopicService();
 
@@ -35,6 +39,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         [TearDown]
         public void TearDown()
         {
+            if(!string.IsNullOrEmpty(_subscriptionId))
+            {
+                _sut.DeleteSubscription(_projectId, _subscriptionId);
+            }
+
             _topicService.DeleteTopic(_projectId, _topicId);
         }    
 
@@ -57,12 +66,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Given_A_Subscription_Exists_When_I_Call_TopicExists_Then_True_Is_Returned()
         {
             //arrange
-            var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            _sut.CreateSubscription(_projectId, _topicId, subscriptionId);
+            _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackDeadlineInSeconds);
 
             //act
-            var result = _sut.SubscriptionExists(_projectId, subscriptionId);
-            _sut.DeleteSubscription(_projectId, subscriptionId);
+            var result = _sut.SubscriptionExists(_projectId, _subscriptionId);
 
             //assert
             Assert.IsNotNull(result);
@@ -74,30 +82,53 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Given_A_Subscription_Doesnt_Exist_When_I_Call_CreateSubscription_The_Subscription_Is_Created()
         {
             //arrange
-            var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            Assert.IsFalse(_sut.SubscriptionExists(_projectId, subscriptionId));
+            _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            Assert.IsFalse(_sut.SubscriptionExists(_projectId, _subscriptionId));
 
             //act
-            _sut.CreateSubscription(_projectId, _topicId, subscriptionId);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackDeadlineInSeconds);
 
             //assert
-            Assert.IsTrue(_sut.SubscriptionExists(_projectId, subscriptionId));
-
-            _sut.DeleteSubscription(_projectId, subscriptionId);
+            Assert.IsTrue(_sut.SubscriptionExists(_projectId, _subscriptionId));
         }
 
         [Test]
         public void Given_A_Subscription_Exists_When_I_Call_CreateSubscription_The_An_Exception_Is_Not_Thrown()
         {
             //arrange
-            var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
 
-            _sut.CreateSubscription(_projectId, _topicId, subscriptionId);
-            Assert.IsTrue(_sut.SubscriptionExists(_projectId, subscriptionId));
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackDeadlineInSeconds);
+            Assert.IsTrue(_sut.SubscriptionExists(_projectId, _subscriptionId));
 
             //act && assert
-            _sut.CreateSubscription(_projectId, _topicId, subscriptionId);
-            _sut.DeleteSubscription(_projectId, subscriptionId);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackDeadlineInSeconds);
+        }
+
+        [TestCase(10)]
+        [TestCase(60)]
+        [TestCase(600)]
+        public void Given_ValidAckDeadline_When_I_Call_SubscriptionExists_Then_An_ArgumentOutOfRangeException_Is_Not_Thrown(int ackDeadlineInSeconds)
+        {
+            //arrange
+            _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+
+            //act && assert
+            Assert.DoesNotThrow(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, ackDeadlineInSeconds));
+        }
+
+        [TestCase(-1)]
+        [TestCase(0)]
+        [TestCase(9)]
+        [TestCase(601)]
+        public void Given_InvalidAckDeadline_When_I_Call_SubscriptionExists_Then_An_ArgumentOutOfRangeException_Is_Thrown(int ackDeadlineInSeconds)
+        {
+            //arrange
+            _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+
+            //act && assert
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, ackDeadlineInSeconds));
+            Assert.AreEqual("The deadline for acking messages must be between '1' and '600'", exception.ParamName);
         }
 
         [Test]
@@ -106,7 +137,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //arrange
             var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
 
-            _sut.CreateSubscription(_projectId, _topicId, subscriptionId);
+            _sut.CreateSubscription(_projectId, _topicId, subscriptionId, _ackDeadlineInSeconds);
             Assert.IsTrue(_sut.SubscriptionExists(_projectId, subscriptionId));
 
             //act

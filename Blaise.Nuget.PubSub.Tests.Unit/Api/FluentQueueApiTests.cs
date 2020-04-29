@@ -206,8 +206,29 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var projectId = "Project123";
             var topicId = "Topic123";
             var subscriptionId = "Subscription123";
+            var ackDeadlineInSeconds = 60;
 
-            _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 0));
+            _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()));
+
+            _sut.ForProject(projectId);
+            _sut.ForTopic(topicId);
+
+            //act
+            _sut.ForSubscription(subscriptionId, ackDeadlineInSeconds);
+
+            //assert
+            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, ackDeadlineInSeconds));
+        }
+
+        [Test]
+        public void Given_No_AckDeadline_When_I_Call_ForSubscription_Then_It_Uses_The_Default_Value_Of_60()
+        {
+            //arrange
+            var projectId = "Project123";
+            var topicId = "Topic123";
+            var subscriptionId = "Subscription123";
+
+            _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()));
 
             _sut.ForProject(projectId);
             _sut.ForTopic(topicId);
@@ -216,7 +237,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.ForSubscription(subscriptionId);
 
             //assert
-            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, 600));
+            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, 60));
         }
 
         [Test]

@@ -1,6 +1,7 @@
 ﻿using Blaise.Nuget.PubSub.Core.Interfaces;
 using Google.Api.Gax.ResourceNames;
 using Google.Cloud.PubSub.V1;
+using System;
 using System.Linq;
 
 namespace Blaise.Nuget.PubSub.Core.Services
@@ -14,8 +15,13 @@ namespace Blaise.Nuget.PubSub.Core.Services
             _subscriberServiceClient = SubscriberServiceApiClient.Create();
         }
 
-        public void CreateSubscription(string projectId, string topicId, string subscriptionId, int ackDeadlineInSeconds = 600)
+        public void CreateSubscription(string projectId, string topicId, string subscriptionId, int ackDeadlineInSeconds)
         {
+            if(ackDeadlineInSeconds < 10 || ackDeadlineInSeconds > 600)
+            {
+                throw new ArgumentOutOfRangeException("The deadline for acking messages must be between '1' and '600'");
+            }
+
             if (SubscriptionExists(projectId, subscriptionId))
             {
                 return;

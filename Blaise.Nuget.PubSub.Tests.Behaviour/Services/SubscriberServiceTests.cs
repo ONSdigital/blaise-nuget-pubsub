@@ -11,6 +11,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
+        private int _ackDeadlineInSeconds;
 
         private TestMessageHandler _messageHandler;
         private TopicService _topicService;
@@ -30,6 +31,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            _ackDeadlineInSeconds = 60;
 
             _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
@@ -37,7 +39,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _publisherService = new PublisherService();
 
             _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackDeadlineInSeconds);
 
             _sut = new SubscriberService();
         }
