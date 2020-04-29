@@ -12,7 +12,7 @@
 		<dependency id="Blaise.Nuget.PubSub.Contracts" version="$version$" />
         <dependency id="Unity" version="5.11.4" exclude="Build,Analyzers" />
         <dependency id="Google.Cloud.PubSub.V1" version="2.0.0" />
-		<dependency id="Quartz" version="2.6.2" />
+		<dependency id="Nito.AsyncEx" version="5.0.0" />
       </group>
     </dependencies>
   </metadata>
