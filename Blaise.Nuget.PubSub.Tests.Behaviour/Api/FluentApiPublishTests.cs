@@ -1,4 +1,6 @@
-﻿using Blaise.Nuget.PubSub.Core.Services;
+﻿
+using Blaise.Nuget.PubSub.Api;
+using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using Google.Cloud.PubSub.V1;
 using NUnit.Framework;
@@ -7,36 +9,37 @@ using System.Linq;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
-    public class PublisherServiceTests
+    public class FluentApiPublishTests
     {
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
-
-        private TopicService _topicService;
+        private TestMessageHandler _messageHandler;
         private SubscriptionService _subscriptionService;
+        private TopicService _topicService;
 
-        private PublisherService _sut;
+        private FluentQueueApi _sut;
 
-        public PublisherServiceTests()
+        public FluentApiPublishTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
 
         [SetUp]
         public void Setup()
-        {
+        {  
+            _messageHandler = new TestMessageHandler();
+            _subscriptionService = new SubscriptionService();
+            _topicService = new TopicService();
+
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
 
-            _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService();
-
             _topicService.CreateTopic(_projectId, _topicId);
             _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId);
 
-            _sut = new PublisherService();
+            _sut = new FluentQueueApi();
         }
 
         [TearDown]
@@ -46,7 +49,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _topicService.DeleteTopic(_projectId, _topicId);
         }
 
-
         [Test]
         public void Given_A_Message_When_I_Call_PublishMessage_Then_The_Message_Is_Published()
         {
@@ -54,7 +56,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             var message = $"Hello, world {Guid.NewGuid()}";
 
             //act
-            _sut.PublishMessage(_projectId, _topicId, message);
+            _sut
+                .ForProject(_projectId)
+                .ForTopic(_topicId)
+                .Publish(message);
+
             var result = GetMessage();
 
             //assert
