@@ -49,7 +49,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enums\IntervalType.cs" />
     <Compile Include="Interfaces\IFluentPublishApi.cs" />
     <Compile Include="Interfaces\IFluentQueueApi.cs" />
     <Compile Include="Interfaces\IFluentSubscriptionApi.cs" />

@@ -27,7 +27,6 @@ namespace Blaise.Nuget.PubSub.Core.Services
         public async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageHandler messageHandler)
         {
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
-
             _subscriberClient = await SubscriberClient.CreateAsync(subscriptionName);
 
             //recommended by GOOGLE that we dont wait and subsequently block the streaming pull method
