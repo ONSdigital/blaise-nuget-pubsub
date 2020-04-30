@@ -93,7 +93,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_A_Subscription_Exists_When_I_Call_CreateSubscription_The_An_Exception_Is_Not_Thrown()
+        public void Given_A_Subscription_Exists_When_I_Call_CreateSubscription_Then_An_Exception_Is_Not_Thrown()
         {
             //arrange
             _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";

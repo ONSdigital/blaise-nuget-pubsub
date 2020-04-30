@@ -1,9 +1,7 @@
 ﻿using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
-using Google.Cloud.PubSub.V1;
 using NUnit.Framework;
 using System;
-using System.Linq;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
@@ -14,6 +12,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _subscriptionId;
         private int _ackDeadlineInSeconds;
 
+        private MessageHelper _messageHelper;
         private TopicService _topicService;
         private SubscriptionService _subscriptionService;
 
@@ -32,6 +31,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _ackDeadlineInSeconds = 60;
 
+            _messageHelper = new MessageHelper();
             _topicService = new TopicService();
             _subscriptionService = new SubscriptionService();
 
@@ -57,23 +57,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
             //act
             _sut.PublishMessage(_projectId, _topicId, message);
-            var result = GetMessage();
+            var result = _messageHelper.GetMessage(_projectId, _subscriptionId);
 
             //assert
             Assert.IsNotNull(result);
             Assert.AreEqual(message, result);
-        }
-
-        private string GetMessage()
-        {
-            var subscriberService = SubscriberServiceApiClient.Create();
-            var subscriptionName = new SubscriptionName(_projectId, _subscriptionId);
-            var response = subscriberService.Pull(subscriptionName, returnImmediately: true, maxMessages: 1);
-
-            var receivedMessage = response.ReceivedMessages.FirstOrDefault();
-            subscriberService.Acknowledge(subscriptionName, new[] { receivedMessage.AckId });
-
-            return receivedMessage.Message.Data.ToStringUtf8();
         }
     }
 }

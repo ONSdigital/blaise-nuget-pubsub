@@ -2,11 +2,8 @@
 using Blaise.Nuget.PubSub.Api;
 using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
-using Google.Cloud.PubSub.V1;
 using NUnit.Framework;
 using System;
-using System.Linq;
-
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
     public class FluentApiPublishTests
@@ -16,8 +13,9 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _subscriptionId;
         private int _ackDeadlineInSeconds;
 
-        private SubscriptionService _subscriptionService;
+        private MessageHelper _messageHelper;
         private TopicService _topicService;
+        private SubscriptionService _subscriptionService;
 
         private FluentQueueApi _sut;
 
@@ -28,9 +26,10 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
         [SetUp]
         public void Setup()
-        {  
-            _subscriptionService = new SubscriptionService();
+        {
+            _messageHelper = new MessageHelper();
             _topicService = new TopicService();
+            _subscriptionService = new SubscriptionService();
 
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
@@ -62,23 +61,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
                 .ForTopic(_topicId)
                 .Publish(message);
 
-            var result = GetMessage();
+            var result = _messageHelper.GetMessage(_projectId, _subscriptionId);
 
             //assert
             Assert.IsNotNull(result);
             Assert.AreEqual(message, result);
-        }
-
-        private string GetMessage()
-        {
-            var subscriberService = SubscriberServiceApiClient.Create();
-            var subscriptionName = new SubscriptionName(_projectId, _subscriptionId);
-            var response = subscriberService.Pull(subscriptionName, returnImmediately: true, maxMessages: 1);
-
-            var receivedMessage = response.ReceivedMessages.FirstOrDefault();
-            subscriberService.Acknowledge(subscriptionName, new[] { receivedMessage.AckId });
-
-            return receivedMessage.Message.Data.ToStringUtf8();
         }
     }
 }

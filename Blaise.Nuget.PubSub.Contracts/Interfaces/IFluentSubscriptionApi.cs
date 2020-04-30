@@ -3,7 +3,7 @@ namespace Blaise.Nuget.PubSub.Contracts.Interfaces
 {
     public interface IFluentSubscriptionApi
     {
-        IFluentSubscriptionApi ForSubscription(string subscriptionId, int ackDeadlineInSeconds = 60);
+        IFluentSubscriptionApi ForSubscription(string subscriptionId);
 
         void StartConsuming(IMessageHandler messageHandler);
 
