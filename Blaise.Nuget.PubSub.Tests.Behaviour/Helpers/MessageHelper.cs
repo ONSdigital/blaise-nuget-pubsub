@@ -13,6 +13,12 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Helpers
             var response = subscriberService.Pull(subscriptionName, returnImmediately: true, maxMessages: 1);
 
             var receivedMessage = response.ReceivedMessages.FirstOrDefault();
+
+            if(receivedMessage == null)
+            {
+                return null;
+            }
+
             subscriberService.Acknowledge(subscriptionName, new[] { receivedMessage.AckId });
 
             return receivedMessage.Message.Data.ToStringUtf8();

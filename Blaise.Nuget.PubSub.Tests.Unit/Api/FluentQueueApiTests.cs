@@ -12,6 +12,8 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
     public class FluentQueueApiTests
     {
         private Mock<IPublisherService> _publisherServiceMock;
+        private Mock<ISubscriptionService> _subscriptionServiceMock;
+        private Mock<ITopicService> _topicServiceMock;
         private Mock<ISubscriberService> _subscriberServiceMock;
 
         private IFluentQueueApi _sut;
@@ -20,10 +22,14 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void SetUpTests()
         {
             _publisherServiceMock = new Mock<IPublisherService>();
+            _subscriptionServiceMock = new Mock<ISubscriptionService>();
+            _topicServiceMock = new Mock<ITopicService>();
             _subscriberServiceMock = new Mock<ISubscriberService>();
 
             _sut = new FluentQueueApi(
                 _publisherServiceMock.Object,
+                _subscriptionServiceMock.Object,
+                _topicServiceMock.Object,
                 _subscriberServiceMock.Object);
         }
 
@@ -56,6 +62,71 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             //act && assert
             var exception = Assert.Throws<ArgumentNullException>(() => _sut.ForProject(null));
             Assert.AreEqual("projectId", exception.ParamName);
+        }
+
+        [Test]
+        public void Given_Valid_Arguments_When_I_Call_CreateTopic_Then_It_Returns_Same_Instance_Of_Itself_Back()
+        {
+            //arrange
+            var projectId = "Project123";
+            var topicId = "Topic123";
+
+            _topicServiceMock.Setup(p => p.CreateTopic(It.IsAny<string>(), It.IsAny<string>()));
+
+            _sut.ForProject(projectId);
+
+            //act
+            var result = _sut.CreateTopic(topicId);
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<IFluentQueueApi>(result);
+            Assert.AreSame(_sut, result);
+        }
+
+        [Test]
+        public void Given_Valid_Arguments_When_I_Call_CreateTopic_Then_It_Calls_The_Correct_Service_Method()
+        {
+            //arrange
+            var projectId = "Project123";
+            var topicId = "Topic123";
+
+            _topicServiceMock.Setup(p => p.CreateTopic(It.IsAny<string>(), It.IsAny<string>()));
+
+            _sut.ForProject(projectId);
+
+            //act
+            _sut.CreateTopic(topicId);
+
+            //assert
+            _topicServiceMock.Verify(v => v.CreateTopic(projectId, topicId));
+        }
+
+        [Test]
+        public void Given_A_Null_TopicId_When_I_Call_CreateTopic_Then_An_ArgumentException_Is_Thrown()
+        {
+            //act && assert
+            var exception = Assert.Throws<ArgumentException>(() => _sut.CreateTopic(string.Empty));
+            Assert.AreEqual("A value for the argument 'topicId' must be supplied", exception.Message);
+        }
+
+        [Test]
+        public void Given_An_Empty_TopicId_When_I_Call_CreateTopic_Then_An_ArgumentNullException_Is_Thrown()
+        {
+            //act && assert
+            var exception = Assert.Throws<ArgumentNullException>(() => _sut.CreateTopic(null));
+            Assert.AreEqual("topicId", exception.ParamName);
+        }
+
+        [Test]
+        public void Given_ForProject_Has_Not_Been_Called_In_A_Previous_Step_When_I_Call_CreateTopic_Then_A_NullReferenceExceptionIs_Thrown()
+        {
+            //arrange
+            var topicId = "Topic123";
+
+            //act && assert
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateTopic(topicId));
+            Assert.AreEqual("The 'ForProject' step needs to be called prior to this", exception.Message);
         }
 
         [Test]
@@ -147,7 +218,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_ForProject_Has_Not_Been_Called_In_A_Previous_Step_When_I_Call_Publish_Then_A_NullReferenceExceptionIs_Thrown()
+        public void Given_ForProject_Has_Not_Been_Called_In_A_Previous_Step_When_I_Call_Publish_Then_A_NullReferenceException_Is_Thrown()
         {
             //arrange
             var topicId = "Topic123";
@@ -161,7 +232,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_ForTopic_Has_Not_Been_Called_In_A_Previous_Step_When_I_Call_Publish_Then_A_NullReferenceExceptionIs_Thrown()
+        public void Given_TopicId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_Publish_Then_A_NullReferenceException_Is_Thrown()
         {
             //arrange
             var projectId = "Project123";
@@ -171,7 +242,87 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             //act && assert
             var exception = Assert.Throws<NullReferenceException>(() => _sut.Publish(message));
-            Assert.AreEqual("The 'ForTopic' step needs to be called prior to this", exception.Message);
+            Assert.AreEqual("The 'ForTopic' or 'CreateTopic' step needs to be called prior to this", exception.Message);
+        }
+
+        [Test]
+        public void Given_Valid_Arguments_When_I_Call_CreateSubscription_Then_It_Calls_The_Correct_Service_Method()
+        {
+            //arrange
+            var projectId = "Project123";
+            var topicId = "Topic123";
+            var subscriptionId = "Subscription123";
+            var ackDeadlineInSeconds = 60;
+
+            _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 0));
+
+            _sut.ForProject(projectId);
+            _sut.ForTopic(topicId);
+
+            //act
+            _sut.CreateSubscription(subscriptionId, ackDeadlineInSeconds);
+
+            //assert
+            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, ackDeadlineInSeconds));
+        }
+
+        [Test]
+        public void Given_Valid_Arguments_When_I_Call_CreateSubscription_Then_It_Returns_Same_Instance_Of_Itself_Back()
+        {
+            //arrange
+            var projectId = "Project123";
+            var topicId = "Topic123";
+            var subscriptionId = "Subscription123";
+            var ackDeadlineInSeconds = 60;
+
+            _sut.ForProject(projectId);
+            _sut.ForTopic(topicId);
+
+            //act
+            var result = _sut.CreateSubscription(subscriptionId, ackDeadlineInSeconds);
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<IFluentSubscriptionApi>(result);
+            Assert.AreSame(_sut, result);
+        }
+
+        [Test]
+        public void Given_A_Null_SubscriptionId_When_I_Call_CreateSubscription_Then_An_ArgumentException_Is_Thrown()
+        {
+            //arrange 
+            var ackDeadlineInSeconds = 60;
+
+            //act && assert
+            var exception = Assert.Throws<ArgumentException>(() => _sut.CreateSubscription(string.Empty, ackDeadlineInSeconds));
+            Assert.AreEqual("A value for the argument 'subscriptionId' must be supplied", exception.Message);
+        }
+
+        [Test]
+        public void Given_An_Empty_SubscriptionId_When_I_Call_CreateSubscription_Then_An_ArgumentNullException_Is_Thrown()
+        {
+            //arrange 
+            var ackDeadlineInSeconds = 60;
+
+            //act && assert
+            var exception = Assert.Throws<ArgumentNullException>(() => _sut.CreateSubscription(null, ackDeadlineInSeconds));
+            Assert.AreEqual("subscriptionId", exception.ParamName);
+        }
+
+
+        [Test]
+        public void Given_TopicId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_CreateSubscription_Then_A_NullReferenceExceptionIs_Thrown()
+        {
+            //arrange
+            var projectId = "Project123";
+            var subscriptionId = "Subscription123";
+            var ackDeadlineInSeconds = 60;
+
+            _sut.ForProject(projectId);
+
+            //act && assert
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateSubscription(subscriptionId, ackDeadlineInSeconds));
+            Assert.AreEqual("The 'ForTopic' or 'CreateTopic' step needs to be called prior to this", exception.Message);
         }
 
         [Test]
@@ -249,7 +400,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_ForProject_Has_Not_Called_In_A_Previous_Step_When_I_Call_StartConsuming_Then_A_NullReferenceExceptionIs_Thrown()
+        public void Given_TopicId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_Then_A_NullReferenceExceptionIs_Thrown()
         {
             //arrange
             var subscriptionId = "Subscription123";
@@ -263,7 +414,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_ForSubscription_Has_Not_Called_In_A_Previous_Step_When_I_Call_StartConsuming_Then_A_NullReferenceExceptionIs_Thrown()
+        public void iven_SubscriptionId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_Then_A_NullReferenceExceptionIs_Thrown()
         {
             //arrange
             var projectId = "Project123";
@@ -273,7 +424,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             //act && assert
             var exception = Assert.Throws<NullReferenceException>(() => _sut.StartConsuming(messageHandler));
-            Assert.AreEqual("The 'ForSubscription' step needs to be called prior to this", exception.Message);
+            Assert.AreEqual("The 'ForSubscription' or 'CreateSubscription' step needs to be called prior to this", exception.Message);
         }
 
         [Test]

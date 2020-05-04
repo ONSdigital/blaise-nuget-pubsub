@@ -36,9 +36,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _ackDeadlineInSeconds = 60;
 
-            _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackDeadlineInSeconds);
-
             _sut = new FluentQueueApi();
         }
 
@@ -55,10 +52,35 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //arrange
             var message = $"Hello, world {Guid.NewGuid()}";
 
+            _topicService.CreateTopic(_projectId, _topicId);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackDeadlineInSeconds);
+
             //act
             _sut
                 .ForProject(_projectId)
                 .ForTopic(_topicId)
+                .Publish(message);
+
+            var result = _messageHelper.GetMessage(_projectId, _subscriptionId);
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(message, result);
+        }
+
+        [Test]
+        public void Given_A_Message_When_I_Call_PublishMessage_Using_CreateTopic_Then_The_Message_Is_Published()
+        {
+            //arrange
+            var message = $"Hello, world {Guid.NewGuid()}";
+
+            _topicService.CreateTopic(_projectId, _topicId);            
+
+            //act
+            _sut
+                .ForProject(_projectId)
+                .CreateTopic(_topicId)
+                .CreateSubscription(_subscriptionId, _ackDeadlineInSeconds)
                 .Publish(message);
 
             var result = _messageHelper.GetMessage(_projectId, _subscriptionId);

@@ -12,6 +12,8 @@ namespace Blaise.Nuget.PubSub.Api
     public sealed class FluentQueueApi : IFluentQueueApi
     {
         private readonly IPublisherService _publisherService;
+        private readonly ISubscriptionService _subscriptionService;
+        private readonly ITopicService _topicService;
         private readonly ISubscriberService _subscriberService;
 
         private string _projectId;
@@ -21,9 +23,13 @@ namespace Blaise.Nuget.PubSub.Api
         //This constructor is needed for unit testing but should not be visible from services that ingest the package
         internal FluentQueueApi(
             IPublisherService publisherService,
+            ISubscriptionService subscriptionService,
+            ITopicService topicService,
             ISubscriberService subscriberService)
         {
             _publisherService = publisherService;
+            _subscriptionService = subscriptionService;
+            _topicService = topicService;
             _subscriberService = subscriberService;
         }
 
@@ -31,9 +37,13 @@ namespace Blaise.Nuget.PubSub.Api
         {
             var unityContainer = new UnityContainer();
             unityContainer.RegisterType<IPublisherService, PublisherService>();
+            unityContainer.RegisterType<ISubscriptionService, SubscriptionService>();
+            unityContainer.RegisterType<ITopicService, TopicService>();
             unityContainer.RegisterType<ISubscriberService, SubscriberService>();
 
             _publisherService = unityContainer.Resolve<IPublisherService>();
+            _subscriptionService = unityContainer.Resolve<ISubscriptionService>();
+            _topicService = unityContainer.Resolve<ITopicService>();
             _subscriberService = unityContainer.Resolve<ISubscriberService>();
         }
 
@@ -46,7 +56,30 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
-        public IFluentPublishApi ForTopic(string topicId)
+        public IFluentQueueApi CreateTopic(string topicId)
+        {
+            topicId.ThrowExceptionIfNullOrEmpty("topicId");
+            ValidateProjectIdIsSet();
+
+            _topicService.CreateTopic(_projectId, topicId);
+
+            _topicId = topicId;
+
+            return this;
+        }
+
+        public IFluentQueueApi CreateSubscription(string subscriptionId, int ackDeadlineInSeconds)
+        {
+            subscriptionId.ThrowExceptionIfNullOrEmpty("subscriptionId");
+            ValidateTopicIdIsSet();
+
+            _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, ackDeadlineInSeconds);
+            _subscriptionId = subscriptionId;
+
+            return this;
+        }
+
+        public IFluentQueueApi ForTopic(string topicId)
         {
             topicId.ThrowExceptionIfNullOrEmpty("topicId");
 
@@ -101,7 +134,7 @@ namespace Blaise.Nuget.PubSub.Api
         {
             if (string.IsNullOrWhiteSpace(_topicId))
             {
-                throw new NullReferenceException("The 'ForTopic' step needs to be called prior to this");
+                throw new NullReferenceException("The 'ForTopic' or 'CreateTopic' step needs to be called prior to this");
             }
         }
 
@@ -109,7 +142,7 @@ namespace Blaise.Nuget.PubSub.Api
         {
             if (string.IsNullOrWhiteSpace(_subscriptionId))
             {
-                throw new NullReferenceException("The 'ForSubscription' step needs to be called prior to this");
+                throw new NullReferenceException("The 'ForSubscription' or 'CreateSubscription' step needs to be called prior to this");
             }
         }
     }
