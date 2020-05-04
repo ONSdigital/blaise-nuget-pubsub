@@ -6,12 +6,12 @@ using System.Threading;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
-    public class SubscriberServiceTests
+    public class SubscriberServiceDeadLetterTests
     {
         private string _projectId;
         private string _topicId;
+        private string _deadLetterTopicId;
         private string _subscriptionId;
-        private int _messageTimeoutInSeconds;
 
         private TestMessageHandler _messageHandler;
         private TopicService _topicService;
@@ -20,7 +20,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
         private SubscriberService _sut;
 
-        public SubscriberServiceTests()
+        public SubscriberServiceDeadLetterTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
@@ -30,8 +30,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         {
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            _deadLetterTopicId = $"{_topicId}-deadletter";
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-            _messageTimeoutInSeconds = 60;
 
             _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
@@ -39,7 +39,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _publisherService = new PublisherService();
 
             _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
 
             _sut = new SubscriberService();
         }
@@ -48,44 +47,36 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void TearDown()
         {
             _subscriptionService.DeleteSubscription(_projectId, _subscriptionId);
+            _topicService.DeleteTopic(_projectId, _deadLetterTopicId);
             _topicService.DeleteTopic(_projectId, _topicId);
         }
 
         [Test]
-        public void Given_Three_Messages_Are_Available_When_I_Call_StartConsuming_Then_The_Three_Messages_Are_Processed()
+        public void Given_DeadLetterSubscription_When_The_Maximum_Number_Of_Retries_Are_Reached_Then_The_Three_Message_Is_Moved_To_The_DeadLetter_Queue()
         {
             //arrange
-            var message1 = $"Hello, world {Guid.NewGuid()}";
-            var message2 = $"Why, Hello {Guid.NewGuid()}";
-            var message3 = $"Yo, Yo {Guid.NewGuid()}";
+            var message = $"Hello, world {Guid.NewGuid()}";
+            var messageTimeoutInSeconds = 10;
+            var maxNumberOfRetries = 5;
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, messageTimeoutInSeconds, maxNumberOfRetries);
 
-            PublishMessage(message1);
-            PublishMessage(message2);
-            PublishMessage(message3);
+            PublishMessage(message);
+
+            _messageHandler.SetResult(false);
+            //_messageHandler.SetDelay((messageTimeoutInSeconds * 1000) + 1000); // longer than the messageTimeoutInSeconds
 
             //act
             _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler);
 
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
+            Thread.Sleep(20000); // allow time for processing the messages off the queue
 
             _sut.StopConsuming();
 
             //assert
             Assert.IsNotNull(_messageHandler.MessagesHandled);
-            Assert.AreEqual(3, _messageHandler.MessagesHandled.Count);
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message2));
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message3));
+            Assert.AreEqual(maxNumberOfRetries, _messageHandler.MessagesHandled.Count);
         }
 
-        [Test]
-        public void Given_No_Subscriptions_When_I_Call_StopConsuming_Then_InvalidOperationException_Is_Thrown()
-        {
-            //act && assert
-            var exception = Assert.Throws<InvalidOperationException>(() => _sut.StopConsuming());
-            Assert.AreEqual("No subscriptons have been setup", exception.Message);
-
-        }
      
         private void PublishMessage(string message)
         {

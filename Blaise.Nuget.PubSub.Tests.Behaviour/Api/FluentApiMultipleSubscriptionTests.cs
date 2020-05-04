@@ -16,7 +16,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _topic2Id;
         private string _subscription1Id;
         private string _subscription2Id;
-        private int _ackDeadlineInSeconds;
+        private int _messageTimeoutInSeconds;
 
         private TestMessageHandler _messageHandler;
         private SubscriptionService _subscriptionService;
@@ -33,20 +33,20 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Setup()
         {  
             _messageHandler = new TestMessageHandler();
-            _subscriptionService = new SubscriptionService();
             _topicService = new TopicService();
+            _subscriptionService = new SubscriptionService(_topicService);
 
             _projectId = "ons-blaise-dev";
             _topic1Id = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _topic2Id = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _subscription1Id = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _subscription2Id = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            _ackDeadlineInSeconds = 60;
+            _messageTimeoutInSeconds = 60;
 
             _topicService.CreateTopic(_projectId, _topic1Id);
             _topicService.CreateTopic(_projectId, _topic2Id);
-            _subscriptionService.CreateSubscription(_projectId, _topic1Id, _subscription1Id, _ackDeadlineInSeconds);
-            _subscriptionService.CreateSubscription(_projectId, _topic2Id, _subscription2Id, _ackDeadlineInSeconds);
+            _subscriptionService.CreateSubscription(_projectId, _topic1Id, _subscription1Id, _messageTimeoutInSeconds);
+            _subscriptionService.CreateSubscription(_projectId, _topic2Id, _subscription2Id, _messageTimeoutInSeconds);
 
             _sut = new FluentQueueApi();
         }

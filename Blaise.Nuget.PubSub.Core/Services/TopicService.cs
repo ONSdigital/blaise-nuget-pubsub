@@ -14,15 +14,15 @@ namespace Blaise.Nuget.PubSub.Core.Services
             _publisherServiceClient = PublisherServiceApiClient.Create();
         }
 
-        public void CreateTopic(string projectId, string topicId)
+        public Topic CreateTopic(string projectId, string topicId)
         {
             if (TopicExists(projectId, topicId))
             {
-                return;
+                return GetTopic(projectId, topicId);
             }
 
             var topicName = new TopicName(projectId, topicId);
-            _publisherServiceClient.CreateTopic(topicName);
+            return _publisherServiceClient.CreateTopic(topicName);
         }
 
 
@@ -37,11 +37,16 @@ namespace Blaise.Nuget.PubSub.Core.Services
             _publisherServiceClient.DeleteTopic(topicName);
         }
 
+        public Topic GetTopic(string projectId, string topicId)
+        {
+            return _publisherServiceClient.GetTopic(new TopicName(projectId, topicId));
+        }
+
         public bool TopicExists(string projectId, string topicId)
         {
             var projectName = new ProjectName(projectId);
             var topics = _publisherServiceClient.ListTopics(projectName);
-
+            
             return topics.Any(t => t.TopicName.TopicId == topicId);
         }
     }

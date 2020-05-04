@@ -68,12 +68,12 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
-        public IFluentQueueApi CreateSubscription(string subscriptionId, int ackDeadlineInSeconds)
+        public IFluentQueueApi CreateSubscription(string subscriptionId, int messageTimeoutInSeconds)
         {
             subscriptionId.ThrowExceptionIfNullOrEmpty("subscriptionId");
             ValidateTopicIdIsSet();
 
-            _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, ackDeadlineInSeconds);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, messageTimeoutInSeconds);
             _subscriptionId = subscriptionId;
 
             return this;

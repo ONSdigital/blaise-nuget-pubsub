@@ -6,6 +6,6 @@
 
         IFluentQueueApi CreateTopic(string topicId);
 
-        IFluentQueueApi CreateSubscription(string subscriptionId, int ackDeadlineInSeconds);
+        IFluentQueueApi CreateSubscription(string subscriptionId, int messageTimeoutInSeconds);
     }
 }

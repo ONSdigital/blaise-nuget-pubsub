@@ -1,7 +1,11 @@
-﻿namespace Blaise.Nuget.PubSub.Core.Interfaces
+﻿using Google.Cloud.PubSub.V1;
+
+namespace Blaise.Nuget.PubSub.Core.Interfaces
 {
     public interface ITopicService
     {
-        void CreateTopic(string projectId, string topicId);
+        Topic CreateTopic(string projectId, string topicId);
+
+        Topic GetTopic(string projectId, string topicId);
     }
 }

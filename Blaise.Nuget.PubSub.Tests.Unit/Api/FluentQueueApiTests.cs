@@ -252,7 +252,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var projectId = "Project123";
             var topicId = "Topic123";
             var subscriptionId = "Subscription123";
-            var ackDeadlineInSeconds = 60;
+            var messageTimeoutInSeconds = 60;
 
             _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 0));
 
@@ -260,10 +260,10 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.ForTopic(topicId);
 
             //act
-            _sut.CreateSubscription(subscriptionId, ackDeadlineInSeconds);
+            _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds);
 
             //assert
-            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, ackDeadlineInSeconds));
+            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, messageTimeoutInSeconds));
         }
 
         [Test]
@@ -273,13 +273,13 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var projectId = "Project123";
             var topicId = "Topic123";
             var subscriptionId = "Subscription123";
-            var ackDeadlineInSeconds = 60;
+            var messageTimeoutInSeconds = 60;
 
             _sut.ForProject(projectId);
             _sut.ForTopic(topicId);
 
             //act
-            var result = _sut.CreateSubscription(subscriptionId, ackDeadlineInSeconds);
+            var result = _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds);
 
             //assert
             Assert.IsNotNull(result);
@@ -291,10 +291,10 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_A_Null_SubscriptionId_When_I_Call_CreateSubscription_Then_An_ArgumentException_Is_Thrown()
         {
             //arrange 
-            var ackDeadlineInSeconds = 60;
+            var messageTimeoutInSeconds = 60;
 
             //act && assert
-            var exception = Assert.Throws<ArgumentException>(() => _sut.CreateSubscription(string.Empty, ackDeadlineInSeconds));
+            var exception = Assert.Throws<ArgumentException>(() => _sut.CreateSubscription(string.Empty, messageTimeoutInSeconds));
             Assert.AreEqual("A value for the argument 'subscriptionId' must be supplied", exception.Message);
         }
 
@@ -302,10 +302,10 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_An_Empty_SubscriptionId_When_I_Call_CreateSubscription_Then_An_ArgumentNullException_Is_Thrown()
         {
             //arrange 
-            var ackDeadlineInSeconds = 60;
+            var messageTimeoutInSeconds = 60;
 
             //act && assert
-            var exception = Assert.Throws<ArgumentNullException>(() => _sut.CreateSubscription(null, ackDeadlineInSeconds));
+            var exception = Assert.Throws<ArgumentNullException>(() => _sut.CreateSubscription(null, messageTimeoutInSeconds));
             Assert.AreEqual("subscriptionId", exception.ParamName);
         }
 
@@ -316,12 +316,12 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             //arrange
             var projectId = "Project123";
             var subscriptionId = "Subscription123";
-            var ackDeadlineInSeconds = 60;
+            var messageTimeoutInSeconds = 60;
 
             _sut.ForProject(projectId);
 
             //act && assert
-            var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateSubscription(subscriptionId, ackDeadlineInSeconds));
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds));
             Assert.AreEqual("The 'ForTopic' or 'CreateTopic' step needs to be called prior to this", exception.Message);
         }
 
@@ -414,7 +414,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void iven_SubscriptionId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_Then_A_NullReferenceExceptionIs_Thrown()
+        public void Given_SubscriptionId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_Then_A_NullReferenceExceptionIs_Thrown()
         {
             //arrange
             var projectId = "Project123";
