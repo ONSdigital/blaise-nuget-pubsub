@@ -56,14 +56,14 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         {
             //arrange
             var message = $"Hello, world {Guid.NewGuid()}";
-            PublishMessage(message);
 
             //act
             _sut
                 .ForProject(_projectId)
-                .ForTopic(_topicId)
                 .ForSubscription(_subscriptionId)
                 .StartConsuming(_messageHandler);
+
+            PublishMessage(message);
 
             Thread.Sleep(5000); // allow time for processing the messages off the queue
 
@@ -82,15 +82,15 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             var message1 = $"Hello, world {Guid.NewGuid()}";
             var message2 = $"Why, Hello {Guid.NewGuid()}";
 
-            PublishMessage(message1);
-            PublishMessage(message2);
-
             //act
             _sut
                 .ForProject(_projectId)
-                .ForTopic(_topicId)
                 .ForSubscription(_subscriptionId)
                 .StartConsuming(_messageHandler);
+
+
+            PublishMessage(message1);
+            PublishMessage(message2);
 
             Thread.Sleep(5000); // allow time for processing the messages off the queue
 
@@ -101,6 +101,35 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             Assert.AreEqual(2, _messageHandler.MessagesHandled.Count);
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message2));
+        }
+
+        [Test]
+        public void Given_Subscribe_To_One_Message_When_I_Call_StopConsuming_Using_FluentApi_Then_Subsequent_Messages_Are_Not_Handled()
+        {
+            //arrange
+            var message = $"Hello, world {Guid.NewGuid()}";
+            var message2 = $"Why, Hello {Guid.NewGuid()}";
+
+            //act
+            _sut
+                .ForProject(_projectId)
+                .ForSubscription(_subscriptionId)
+                .StartConsuming(_messageHandler);
+
+            PublishMessage(message);
+
+            Thread.Sleep(5000); // allow time for processing the messages off the queue
+
+            _sut.StopConsuming();
+
+            PublishMessage(message2);
+
+            Thread.Sleep(5000); // allow time for processing the messages off the queue
+
+            //assert
+            Assert.IsNotNull(_messageHandler.MessagesHandled);
+            Assert.AreEqual(1, _messageHandler.MessagesHandled.Count);
+            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message));
         }
 
         [Test]

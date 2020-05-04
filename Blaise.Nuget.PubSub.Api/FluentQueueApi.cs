@@ -46,7 +46,7 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
-        public IFluentQueueApi ForTopic(string topicId)
+        public IFluentPublishApi ForTopic(string topicId)
         {
             topicId.ThrowExceptionIfNullOrEmpty("topicId");
 
