@@ -5,19 +5,21 @@ using System;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
-    public class SubscriptionServiceDeadLetterTests
+    public class DeadLetterSubscriptionServiceTests
     {
         private string _projectId;
         private string _topicId;
         private string _deadLetterTopicId;
         private string _subscriptionId;
+        private string _deadLetterSubscriptionId;
         private int _messageTimeoutInSeconds;
 
         private TopicService _topicService;
+        private SubscriptionService _subscriptionService;
 
-        private SubscriptionService _sut;
+        private DeadLetterSubscriptionService _sut;
 
-        public SubscriptionServiceDeadLetterTests()
+        public DeadLetterSubscriptionServiceTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
@@ -29,18 +31,22 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _deadLetterTopicId = $"{_topicId}-deadletter";
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
+            _deadLetterSubscriptionId = $"{_subscriptionId}-deadletter";
             _messageTimeoutInSeconds = 60;
 
             _topicService = new TopicService();
-            _topicService.CreateTopic(_projectId, _topicId);
+            _subscriptionService = new SubscriptionService();
 
-            _sut = new SubscriptionService(_topicService);
+            _sut = new DeadLetterSubscriptionService(_topicService, _subscriptionService);
+
+            _topicService.CreateTopic(_projectId, _topicId);
         }
 
         [TearDown]
         public void TearDown()
         {
-            _sut.DeleteSubscription(_projectId, _subscriptionId);
+            _subscriptionService.DeleteSubscription(_projectId, _deadLetterSubscriptionId);
+            _subscriptionService.DeleteSubscription(_projectId, _subscriptionId);
             _topicService.DeleteTopic(_projectId, _deadLetterTopicId);
             _topicService.DeleteTopic(_projectId, _topicId);
         }
@@ -52,10 +58,10 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             var maxNumberOfRetries = 5;
 
             //act
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds, maxNumberOfRetries);
+            _sut.CreateSubscriptionWithDeadLetter(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds, maxNumberOfRetries);
 
             //assert
-            Assert.IsTrue(_sut.SubscriptionExists(_projectId, _subscriptionId));
+            Assert.IsTrue(_subscriptionService.SubscriptionExists(_projectId, _subscriptionId));
             Assert.IsTrue(_topicService.TopicExists(_projectId, _deadLetterTopicId));
         }
 
@@ -68,7 +74,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
 
             //act && assert
-            Assert.DoesNotThrow(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, 60, maxNumberOfRetries));
+            Assert.DoesNotThrow(() => _sut.CreateSubscriptionWithDeadLetter(_projectId, _topicId, _subscriptionId, 60, maxNumberOfRetries));
         }
 
         [TestCase(-1)]
@@ -81,7 +87,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
 
             //act && assert
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, 60, maxNumberOfRetries));
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _sut.CreateSubscriptionWithDeadLetter(_projectId, _topicId, _subscriptionId, 60, maxNumberOfRetries));
             Assert.AreEqual("The maximum number of retries for processing messages must be between '5' and '100'", exception.ParamName);
         }
     }

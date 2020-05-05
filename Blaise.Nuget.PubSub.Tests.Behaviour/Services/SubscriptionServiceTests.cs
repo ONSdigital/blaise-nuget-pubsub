@@ -32,7 +32,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _topicService = new TopicService();
             _topicService.CreateTopic(_projectId, _topicId);
 
-            _sut = new SubscriptionService(_topicService);
+            _sut = new SubscriptionService();
         }
 
         [TearDown]

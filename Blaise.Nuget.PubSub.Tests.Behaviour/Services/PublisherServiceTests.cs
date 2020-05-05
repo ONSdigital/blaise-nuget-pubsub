@@ -33,7 +33,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
             _messageHelper = new MessageHelper();
             _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService(_topicService);
+            _subscriptionService = new SubscriptionService();
 
             _topicService.CreateTopic(_projectId, _topicId);
             _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
@@ -47,7 +47,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _subscriptionService.DeleteSubscription(_projectId, _subscriptionId);
             _topicService.DeleteTopic(_projectId, _topicId);
         }
-
 
         [Test]
         public void Given_A_Message_When_I_Call_PublishMessage_Then_The_Message_Is_Published()

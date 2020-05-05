@@ -12,10 +12,12 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _topicId;
         private string _deadLetterTopicId;
         private string _subscriptionId;
+        private string _deadLetterSubscriptionId;
 
         private TestMessageHandler _messageHandler;
         private TopicService _topicService;
         private SubscriptionService _subscriptionService;
+        private DeadLetterSubscriptionService _deadLetterSubscriptionService;
         private PublisherService _publisherService;
 
         private SubscriberService _sut;
@@ -32,20 +34,20 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _deadLetterTopicId = $"{_topicId}-deadletter";
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
+            _deadLetterSubscriptionId = $"{_subscriptionId}-deadletter";
 
             _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService(_topicService);
+            _subscriptionService = new SubscriptionService();
             _publisherService = new PublisherService();
-
-            _topicService.CreateTopic(_projectId, _topicId);
-
+            _deadLetterSubscriptionService = new DeadLetterSubscriptionService(_topicService, _subscriptionService);
             _sut = new SubscriberService();
         }
 
         [TearDown]
         public void TearDown()
         {
+            _subscriptionService.DeleteSubscription(_projectId, _deadLetterSubscriptionId);
             _subscriptionService.DeleteSubscription(_projectId, _subscriptionId);
             _topicService.DeleteTopic(_projectId, _deadLetterTopicId);
             _topicService.DeleteTopic(_projectId, _topicId);
@@ -58,12 +60,13 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             var message = $"Hello, world {Guid.NewGuid()}";
             var messageTimeoutInSeconds = 10;
             var maxNumberOfRetries = 5;
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, messageTimeoutInSeconds, maxNumberOfRetries);
+
+            _topicService.CreateTopic(_projectId, _topicId);
+            _deadLetterSubscriptionService.CreateSubscriptionWithDeadLetter(_projectId, _topicId, _subscriptionId, messageTimeoutInSeconds, maxNumberOfRetries);
 
             PublishMessage(message);
 
             _messageHandler.SetResult(false);
-            //_messageHandler.SetDelay((messageTimeoutInSeconds * 1000) + 1000); // longer than the messageTimeoutInSeconds
 
             //act
             _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler);
@@ -77,7 +80,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             Assert.AreEqual(maxNumberOfRetries, _messageHandler.MessagesHandled.Count);
         }
 
-     
         private void PublishMessage(string message)
         {
             _publisherService.PublishMessage(_projectId, _topicId, message);

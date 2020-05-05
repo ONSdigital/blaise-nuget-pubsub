@@ -29,7 +29,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         {
             _messageHelper = new MessageHelper();
             _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService(_topicService);
+            _subscriptionService = new SubscriptionService();
 
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";

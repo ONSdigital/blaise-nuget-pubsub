@@ -35,7 +35,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
             _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService(_topicService);
+            _subscriptionService = new SubscriptionService();
             _publisherService = new PublisherService();
 
             _topicService.CreateTopic(_projectId, _topicId);

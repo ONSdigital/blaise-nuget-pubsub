@@ -7,8 +7,6 @@ namespace Blaise.Nuget.PubSub.Core.Interfaces
     {
         Subscription CreateSubscription(string projectId, string topicId, string subscriptionId, int messageTimeoutInSeconds);
 
-        Subscription CreateSubscription(string projectId, string topicId, string subscriptionId, int messageTimeoutInSeconds, int maxDeliveryAttempts);
-
         Subscription GetSubscription(string projectId, string topicId);
     }
 }

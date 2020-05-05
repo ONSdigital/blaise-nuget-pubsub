@@ -32,7 +32,10 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Helpers
         {
             MessagesHandled.Add(message);
 
-            Thread.Sleep(_delayInMilliseconds);
+            if (_delayInMilliseconds > 0)
+            {
+                Thread.Sleep(_delayInMilliseconds);
+            }
 
             return _result;
         }

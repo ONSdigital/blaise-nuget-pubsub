@@ -10,7 +10,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Helpers
             var credentialKey = ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"];
 
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
-
         }
     }
 }
