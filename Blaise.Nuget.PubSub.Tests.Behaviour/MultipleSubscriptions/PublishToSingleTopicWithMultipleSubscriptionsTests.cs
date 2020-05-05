@@ -3,9 +3,9 @@ using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
 
-namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
+namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
 {
-    public class PublisherMultipleSubscriptionsServiceTests
+    public class PublishToSingleTopicWithMultipleSubscriptionsTests
     {
         private string _projectId;
         private string _topicId;
@@ -19,7 +19,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
         private PublisherService _sut;
 
-        public PublisherMultipleSubscriptionsServiceTests()
+        public PublishToSingleTopicWithMultipleSubscriptionsTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
