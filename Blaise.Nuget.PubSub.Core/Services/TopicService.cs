@@ -7,12 +7,8 @@ namespace Blaise.Nuget.PubSub.Core.Services
 {
     public class TopicService : ITopicService
     {
-        private readonly PublisherServiceApiClient _publisherServiceClient;
+        private  PublisherServiceApiClient _publisherServiceClient;
 
-        public TopicService()
-        {
-            _publisherServiceClient = PublisherServiceApiClient.Create();
-        }
 
         public Topic CreateTopic(string projectId, string topicId)
         {
@@ -21,8 +17,9 @@ namespace Blaise.Nuget.PubSub.Core.Services
                 return GetTopic(projectId, topicId);
             }
 
+            var client = GetPublisherClient();
             var topicName = new TopicName(projectId, topicId);
-            return _publisherServiceClient.CreateTopic(topicName);
+            return client.CreateTopic(topicName);
         }
 
 
@@ -33,21 +30,36 @@ namespace Blaise.Nuget.PubSub.Core.Services
                 return;
             }
 
+            var client = GetPublisherClient();
             var topicName = new TopicName(projectId, topicId);
-            _publisherServiceClient.DeleteTopic(topicName);
+
+            client.DeleteTopic(topicName);
         }
 
         public Topic GetTopic(string projectId, string topicId)
         {
-            return _publisherServiceClient.GetTopic(new TopicName(projectId, topicId));
+            var client = GetPublisherClient();
+
+            return client.GetTopic(new TopicName(projectId, topicId));
         }
 
         public bool TopicExists(string projectId, string topicId)
         {
+            var client = GetPublisherClient();
             var projectName = new ProjectName(projectId);
-            var topics = _publisherServiceClient.ListTopics(projectName);
+            var topics = client.ListTopics(projectName);
             
             return topics.Any(t => t.TopicName.TopicId == topicId);
+        }
+
+        private PublisherServiceApiClient GetPublisherClient()
+        {
+            if (_publisherServiceClient == null)
+            {
+                _publisherServiceClient = PublisherServiceApiClient.Create();
+            }
+
+            return _publisherServiceClient;
         }
     }
 }

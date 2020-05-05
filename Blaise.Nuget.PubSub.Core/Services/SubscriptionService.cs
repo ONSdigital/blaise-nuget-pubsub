@@ -12,7 +12,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
 
         public Subscription CreateSubscription(string projectId, string topicId, string subscriptionId, int messageTimeoutInSeconds)
         {
-            var subscriberServiceClient = GetSubscriberClient();
+            var client = GetSubscriberClient();
 
             if (messageTimeoutInSeconds < 10 || messageTimeoutInSeconds > 600)
             {
@@ -26,12 +26,12 @@ namespace Blaise.Nuget.PubSub.Core.Services
 
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
             var topicName = new TopicName(projectId, topicId);
-            return subscriberServiceClient.CreateSubscription(subscriptionName, topicName, pushConfig: null, ackDeadlineSeconds: messageTimeoutInSeconds);
+            return client.CreateSubscription(subscriptionName, topicName, pushConfig: null, ackDeadlineSeconds: messageTimeoutInSeconds);
         }
 
         public void DeleteSubscription(string projectId, string subscriptionId)
         {
-            var subscriberServiceClient = GetSubscriberClient();
+            var client = GetSubscriberClient();
 
             if (!SubscriptionExists(projectId, subscriptionId))
             {
@@ -39,22 +39,22 @@ namespace Blaise.Nuget.PubSub.Core.Services
             }
 
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
-            subscriberServiceClient.DeleteSubscription(subscriptionName);
+            client.DeleteSubscription(subscriptionName);
         }
 
         public Subscription GetSubscription(string projectId, string subscriptionId)
         {
-            var subscriberServiceClient = GetSubscriberClient();
+            var client = GetSubscriberClient();
 
-            return subscriberServiceClient.GetSubscription(new SubscriptionName(projectId, subscriptionId));
+            return client.GetSubscription(new SubscriptionName(projectId, subscriptionId));
         }
 
         public bool SubscriptionExists(string projectId, string subscriptionId)
         {
-            var subscriberServiceClient = GetSubscriberClient();
+            var client = GetSubscriberClient();
 
             var projectName = new ProjectName(projectId);
-            var subscriptions = subscriberServiceClient.ListSubscriptions(projectName);
+            var subscriptions = client.ListSubscriptions(projectName);
 
             return subscriptions.Any(s => s.SubscriptionName.SubscriptionId == subscriptionId);
         }
