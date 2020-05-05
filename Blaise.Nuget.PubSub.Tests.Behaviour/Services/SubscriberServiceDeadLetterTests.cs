@@ -54,6 +54,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
+        [Ignore("Functionality not fully complete")]
         public void Given_DeadLetterSubscription_When_The_Maximum_Number_Of_Retries_Are_Reached_Then_The_Three_Message_Is_Moved_To_The_DeadLetter_Queue()
         {
             //arrange

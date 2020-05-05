@@ -8,15 +8,12 @@ namespace Blaise.Nuget.PubSub.Core.Services
 {
     public class SubscriptionService : ISubscriptionService
     {
-        private readonly SubscriberServiceApiClient _subscriberServiceClient;
-
-        public SubscriptionService()
-        {
-            _subscriberServiceClient = SubscriberServiceApiClient.Create();
-        }
+        private SubscriberServiceApiClient _subscriberServiceClient;
 
         public Subscription CreateSubscription(string projectId, string topicId, string subscriptionId, int messageTimeoutInSeconds)
         {
+            var subscriberServiceClient = GetSubscriberClient();
+
             if (messageTimeoutInSeconds < 10 || messageTimeoutInSeconds > 600)
             {
                 throw new ArgumentOutOfRangeException("The deadline for acking messages must be between '1' and '600'");
@@ -29,31 +26,47 @@ namespace Blaise.Nuget.PubSub.Core.Services
 
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
             var topicName = new TopicName(projectId, topicId);
-            return _subscriberServiceClient.CreateSubscription(subscriptionName, topicName, pushConfig: null, ackDeadlineSeconds: messageTimeoutInSeconds);
+            return subscriberServiceClient.CreateSubscription(subscriptionName, topicName, pushConfig: null, ackDeadlineSeconds: messageTimeoutInSeconds);
         }
 
         public void DeleteSubscription(string projectId, string subscriptionId)
         {
+            var subscriberServiceClient = GetSubscriberClient();
+
             if (!SubscriptionExists(projectId, subscriptionId))
             {
                 return;
             }
 
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
-            _subscriberServiceClient.DeleteSubscription(subscriptionName);
+            subscriberServiceClient.DeleteSubscription(subscriptionName);
         }
 
         public Subscription GetSubscription(string projectId, string subscriptionId)
         {
-            return _subscriberServiceClient.GetSubscription(new SubscriptionName(projectId, subscriptionId));
+            var subscriberServiceClient = GetSubscriberClient();
+
+            return subscriberServiceClient.GetSubscription(new SubscriptionName(projectId, subscriptionId));
         }
 
         public bool SubscriptionExists(string projectId, string subscriptionId)
         {
+            var subscriberServiceClient = GetSubscriberClient();
+
             var projectName = new ProjectName(projectId);
-            var subscriptions = _subscriberServiceClient.ListSubscriptions(projectName);
+            var subscriptions = subscriberServiceClient.ListSubscriptions(projectName);
 
             return subscriptions.Any(s => s.SubscriptionName.SubscriptionId == subscriptionId);
+        }
+
+        private SubscriberServiceApiClient GetSubscriberClient()
+        {
+            if (_subscriberServiceClient == null)
+            {
+                _subscriberServiceClient = SubscriberServiceApiClient.Create();
+            }
+
+            return _subscriberServiceClient;
         }
     }
 }
