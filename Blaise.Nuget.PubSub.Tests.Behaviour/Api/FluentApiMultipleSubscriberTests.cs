@@ -4,12 +4,10 @@ using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
-using System.Linq;
-using System.Threading;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
-    public class FluentApiMultipleSubscriptionTests
+    public class FluentApiMultipleSubscriberTests
     {
         private string _projectId;
         private string _topic1Id;
@@ -24,7 +22,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
         private FluentQueueApi _sut;
 
-        public FluentApiMultipleSubscriptionTests()
+        public FluentApiMultipleSubscriberTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
@@ -61,72 +59,32 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_There_Are_Two_Subscriptions_When_I_Call_StartConsuming_Both_Subsriptions_Are_Handled()
+        public void Given_There_Are_Two_Subscriptions_When_I_Call_StartConsuming_Both_Subscriptions_Are_Handled()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
             var message2 = $"Hello, world {Guid.NewGuid()}";
+            var stopConsumingMessagesInSeconds = 5; // allow time for processing the messages off the queue
+
+            PublishMessage(_topic1Id, message1);
+            PublishMessage(_topic2Id, message2);
 
             //act
             _sut
                 .ForProject(_projectId)
                 .ForSubscription(_subscription1Id)
-                .StartConsuming(_messageHandler);
+                .StartConsuming(_messageHandler, stopConsumingMessagesInSeconds);
 
             _sut
                 .ForProject(_projectId)
                 .ForSubscription(_subscription2Id)
-                .StartConsuming(_messageHandler);
-
-            PublishMessage(_topic1Id, message1);
-            PublishMessage(_topic2Id, message2);
-
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
-
-            _sut.StopConsuming();
+                .StartConsuming(_messageHandler, stopConsumingMessagesInSeconds);
 
             //assert
             Assert.IsNotNull(_messageHandler.MessagesHandled);
             Assert.AreEqual(2, _messageHandler.MessagesHandled.Count);
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message2));
-        }
-
-        [Test]
-        public void Given_I_Use_The_Same_Client_For_Both_Subscriptions_When_I_Call_StopConsuming_Using_FluentApi_Then_Subsequent_Messages_Are_Not_Handled_Only_For_The_Last_Subscription()
-        {
-            //arrange
-            var message1 = $"Hello, world {Guid.NewGuid()}";
-            var message2 = $"Why, Hello {Guid.NewGuid()}";
-
-            //act
-            _sut
-                .ForProject(_projectId)
-                .ForSubscription(_subscription1Id)
-                .StartConsuming(_messageHandler);
-
-            _sut
-                .ForProject(_projectId)
-                .ForSubscription(_subscription2Id)
-                .StartConsuming(_messageHandler);
-
-            PublishMessage(_topic1Id, message1);
-            PublishMessage(_topic2Id, message2);
-
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
-
-            _sut.StopConsuming();
-
-            PublishMessage(_topic1Id, message1);
-            PublishMessage(_topic2Id, message2);
-
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
-
-            //assert
-            Assert.IsNotNull(_messageHandler.MessagesHandled);
-            Assert.AreEqual(3, _messageHandler.MessagesHandled.Count);
-            Assert.AreEqual(2, _messageHandler.MessagesHandled.Count(h => h.Contains(message1)));
-            Assert.AreEqual(1, _messageHandler.MessagesHandled.Count(h => h.Contains(message2)));
         }
 
         private void PublishMessage(string topicId, string message)

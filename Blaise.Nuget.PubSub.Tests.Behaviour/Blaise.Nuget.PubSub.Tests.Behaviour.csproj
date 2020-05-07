@@ -116,7 +116,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\FluentApiPublishTests.cs" />
-    <Compile Include="Api\FluentApiMultipleSubscriptionTests.cs" />
     <Compile Include="Api\FluentApiSubscriptionTests.cs" />
     <Compile Include="Helpers\AuthorizationHelper.cs" />
     <Compile Include="Helpers\MessageHelper.cs" />

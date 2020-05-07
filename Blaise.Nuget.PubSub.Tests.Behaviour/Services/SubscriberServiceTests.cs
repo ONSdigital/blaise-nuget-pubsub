@@ -64,11 +64,9 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             PublishMessage(message3);
 
             //act
-            _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler);
+            _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler, 60);
 
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
-
-            _sut.StopConsuming();
+            Thread.Sleep(20000); // allow time for processing the messages off the queue
 
             //assert
             Assert.IsNotNull(_messageHandler.MessagesHandled);

@@ -4,11 +4,10 @@ using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
-using System.Threading;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
-    public class FluentApiSubscriptionTests
+    public class FluentApiSubscriberTests
     {
         private string _projectId;
         private string _topicId;
@@ -21,7 +20,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
         private FluentQueueApi _sut;
 
-        public FluentApiSubscriptionTests()
+        public FluentApiSubscriberTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
@@ -56,16 +55,15 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         {
             //arrange
             var message = $"Hello, world {Guid.NewGuid()}";
-            
+            var stopConsumingMessagesInSeconds = 5; // allow time for processing the messages off the queue
+
             PublishMessage(message);
-            
+
             //act
             _sut
                 .ForProject(_projectId)
                 .ForSubscription(_subscriptionId)
-                .StartConsuming(_messageHandler, 60);
-
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
+                .StartConsuming(_messageHandler, stopConsumingMessagesInSeconds);
 
             //assert
             Assert.IsNotNull(_messageHandler.MessagesHandled);
@@ -79,6 +77,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
             var message2 = $"Why, Hello {Guid.NewGuid()}";
+            var stopConsumingMessagesInSeconds = 60; // allow time for processing the messages off the queue
 
             PublishMessage(message1);
             PublishMessage(message2);
@@ -87,49 +86,14 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _sut
                 .ForProject(_projectId)
                 .ForSubscription(_subscriptionId)
-                .StartConsuming(_messageHandler, 60);
-
-            Thread.Sleep(20000); // allow time for processing the messages off the queue
-
-            _sut.StopConsuming();
+                .StartConsuming(_messageHandler, stopConsumingMessagesInSeconds);
 
             //assert
             Assert.IsNotNull(_messageHandler.MessagesHandled);
             Assert.AreEqual(2, _messageHandler.MessagesHandled.Count);
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message2));
-        }
-
-        [Test]
-        public void Given_Subscribe_To_One_Message_When_I_Call_StopConsuming_Using_FluentApi_Then_Subsequent_Messages_Are_Not_Handled()
-        {
-            //arrange
-            var message = $"Hello, world {Guid.NewGuid()}";
-            var message2 = $"Why, Hello {Guid.NewGuid()}";
-
-            PublishMessage(message);
-
-            //act
-            _sut
-                .ForProject(_projectId)
-                .ForSubscription(_subscriptionId)
-                .StartConsuming(_messageHandler, 60);
-
-
-
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
-
-            _sut.StopConsuming();
-
-            PublishMessage(message2);
-
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
-
-            //assert
-            Assert.IsNotNull(_messageHandler.MessagesHandled);
-            Assert.AreEqual(1, _messageHandler.MessagesHandled.Count);
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message));
-        }
+        }       
 
         [Test]
         public void Given_No_Subscriptions_When_I_Call_StopConsuming_Then_InvalidOperationException_Is_Thrown()
@@ -137,7 +101,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //act && assert
             var exception = Assert.Throws<InvalidOperationException>(() => _sut.StopConsuming());
             Assert.AreEqual("No subscriptons have been setup", exception.Message);
-
         }
 
         private void PublishMessage(string message)

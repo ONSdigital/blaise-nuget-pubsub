@@ -12,9 +12,9 @@ namespace Blaise.Nuget.PubSub.Core.Services
     {
         private SubscriberClient _subscriberClient;
 
-        public void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler)
+        public void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler, int stopConsumingAfterSeconds = 0)
         {
-            var createSubscriptionTask = StartConsumingAsync(projectId, subscriptionId, messageHandler);
+            var createSubscriptionTask = StartConsumingAsync(projectId, subscriptionId, messageHandler, stopConsumingAfterSeconds);
             createSubscriptionTask.WaitAndUnwrapException();
         }
 
@@ -24,24 +24,27 @@ namespace Blaise.Nuget.PubSub.Core.Services
             cancelSubscriptionTask.WaitAndUnwrapException();
         }
 
-        public async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageHandler messageHandler)
+        public async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageHandler messageHandler, int stopConsumingAfterSeconds = 0)
         {
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
             _subscriberClient = await SubscriberClient.CreateAsync(subscriptionName);
 
-            //recommended by GOOGLE that we dont wait and subsequently block the streaming pull method
-            #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            _subscriberClient.StartAsync((msg, cancellationToken) =>
+            await _subscriberClient.StartAsync((msg, cancellationToken) =>
             {
+                if(stopConsumingAfterSeconds > 0)
+                {
+                    _subscriberClient.StopAsync(TimeSpan.FromSeconds(stopConsumingAfterSeconds));
+                }
+                
                 var message = msg.Data.ToStringUtf8();
 
                 if (messageHandler.HandleMessage(message))
                 {
                     return Task.FromResult(SubscriberClient.Reply.Ack);
                 }
-                return Task.FromResult(SubscriberClient.Reply.Nack);               
-            }).ConfigureAwait(false);
-            #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+                return Task.FromResult(SubscriberClient.Reply.Nack);
+            });
         }
 
         public async Task StopConsumingAsync()

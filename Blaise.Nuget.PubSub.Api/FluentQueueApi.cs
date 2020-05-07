@@ -107,14 +107,14 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
-        public void StartConsuming(IMessageHandler messageHandler)
+        public void StartConsuming(IMessageHandler messageHandler, int stopConsumingAfterSeconds = 0)
         {
             ValidateProjectIdIsSet();
             ValidateSubscriptionIdIsSet();
 
             messageHandler.ThrowExceptionIfNull("messageHandler");
 
-            _subscriberService.StartConsuming(_projectId, _subscriptionId, messageHandler);
+            _subscriberService.StartConsuming(_projectId, _subscriptionId, messageHandler, stopConsumingAfterSeconds);
         }
 
         public void StopConsuming()
