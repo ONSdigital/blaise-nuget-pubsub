@@ -11,12 +11,12 @@ namespace Blaise.Nuget.PubSub.Core.Services
         {
             var publisherServiceClient = PublisherServiceApiClient.Create();
             var topicName = new TopicName(projectId, topicId);
-            var message = BuildMessage(message, attributes);
+            var pubsubMessage = BuildPubsubMessage(message, attributes);
 
-            publisherServiceClient.Publish(topicName, new[] { message });
+            publisherServiceClient.Publish(topicName, new[] { pubsubMessage });
         }
 
-        private PubsubMessage BuildMessage(string message, Dictionary<string, string> attributes)
+        private PubsubMessage BuildPubsubMessage(string message, Dictionary<string, string> attributes)
         {
             if (attributes == null)
             {
