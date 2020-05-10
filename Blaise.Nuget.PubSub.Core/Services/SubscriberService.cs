@@ -39,7 +39,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
                 }
 
                 return Task.FromResult(SubscriberClient.Reply.Nack);
-            });
+            }).ConfigureAwait(false);
         }
 
         private async Task StopConsumingAsync()
@@ -49,7 +49,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
                 throw new InvalidOperationException("No subscriptons have been setup");
             }
 
-            await _subscriberClient.StopAsync(CancellationToken.None);
+            await _subscriberClient.StopAsync(CancellationToken.None).ConfigureAwait(false);
         }
     }
 }
