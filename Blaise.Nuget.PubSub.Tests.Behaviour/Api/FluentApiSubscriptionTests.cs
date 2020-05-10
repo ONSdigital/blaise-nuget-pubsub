@@ -4,6 +4,7 @@ using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
@@ -52,7 +53,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public async Task Given_There_Are_Three_Available_When_I_Call_StartConsuming_Using_FluentApi_Then_The_Three_Messages_Are_Processed()
+        public void Given_There_Are_Three_Available_When_I_Call_StartConsuming_Using_FluentApi_Then_The_Three_Messages_Are_Processed()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
@@ -70,7 +71,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             PublishMessage(message2);
             PublishMessage(message3);
 
-            await Task.Delay(5000); // allow time for processing the messages off the queue
+            Thread.Sleep(5000); // allow time for processing the messages off the queue
 
             _sut.StopConsuming();
 
@@ -83,7 +84,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }     
 
         [Test]
-        public async Task Given_Subscribe_To_One_Message_When_I_Call_StopConsuming_Using_FluentApi_Then_Subsequent_Messages_Are_Not_Handled()
+        public void Given_Subscribe_To_One_Message_When_I_Call_StopConsuming_Using_FluentApi_Then_Subsequent_Messages_Are_Not_Handled()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
@@ -97,13 +98,13 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
             PublishMessage(message1);
 
-            await Task.Delay(5000); // allow time for processing the messages off the queue
+            Thread.Sleep(5000); // allow time for processing the messages off the queue
 
             _sut.StopConsuming();
 
             PublishMessage(message1);
 
-            await Task.Delay(5000); // allow time for processing the messages off the queue
+            Thread.Sleep(5000); // allow time for processing the messages off the queue
 
             //assert
             Assert.IsNotNull(_messageHandler.MessagesHandled);
