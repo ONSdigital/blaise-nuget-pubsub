@@ -385,31 +385,9 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var projectId = "Project123";
             var subscriptionId = "Subscription123";
             var messageHandler = new TestMessageHandler();
-            var stopConsumingAfterSeconds = 60;
 
 
-            _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IMessageHandler>(), It.IsAny<int>()));
-
-            _sut.ForProject(projectId);
-            _sut.ForSubscription(subscriptionId);
-
-            //act
-            _sut.StartConsuming(messageHandler, stopConsumingAfterSeconds);
-
-            //assert
-            _subscriberServiceMock.Verify(v => v.StartConsuming(projectId, subscriptionId, messageHandler, stopConsumingAfterSeconds));
-        }
-
-        [Test]
-        public void Given_StopConsumingAfterSeconds_Is_Not_Provided_When_I_Call_StartConsuming_Then_It_Uses_A_Default_Value_Of_0()
-        {
-            //arrange
-            var projectId = "Project123";
-            var subscriptionId = "Subscription123";
-            var messageHandler = new TestMessageHandler();
-
-
-            _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IMessageHandler>(), It.IsAny<int>()));
+            _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IMessageHandler>()));
 
             _sut.ForProject(projectId);
             _sut.ForSubscription(subscriptionId);
@@ -418,8 +396,8 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.StartConsuming(messageHandler);
 
             //assert
-            _subscriberServiceMock.Verify(v => v.StartConsuming(projectId, subscriptionId, messageHandler, 0));
-        }
+            _subscriberServiceMock.Verify(v => v.StartConsuming(projectId, subscriptionId, messageHandler));
+        }     
 
         [Test]
         public void Given_TopicId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_Then_A_NullReferenceExceptionIs_Thrown()

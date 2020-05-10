@@ -12,9 +12,9 @@ namespace Blaise.Nuget.PubSub.Core.Services
     {
         private SubscriberClient _subscriberClient;
 
-        public void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler, int stopConsumingAfterSeconds = 0)
+        public void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler)
         {
-            var createSubscriptionTask = StartConsumingAsync(projectId, subscriptionId, messageHandler, stopConsumingAfterSeconds);
+            var createSubscriptionTask = StartConsumingAsync(projectId, subscriptionId, messageHandler);
             createSubscriptionTask.WaitAndUnwrapException();
         }
 
@@ -24,18 +24,13 @@ namespace Blaise.Nuget.PubSub.Core.Services
             cancelSubscriptionTask.WaitAndUnwrapException();
         }
 
-        private async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageHandler messageHandler, int stopConsumingAfterSeconds = 0)
+        private async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageHandler messageHandler)
         {
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
             _subscriberClient = await SubscriberClient.CreateAsync(subscriptionName);
 
             await _subscriberClient.StartAsync((msg, cancellationToken) =>
-            {
-                if(stopConsumingAfterSeconds > 0)
-                {
-                    _subscriberClient.StopAsync(TimeSpan.FromSeconds(stopConsumingAfterSeconds));
-                }
-                
+            {               
                 var message = msg.Data.ToStringUtf8();
 
                 if (messageHandler.HandleMessage(message))

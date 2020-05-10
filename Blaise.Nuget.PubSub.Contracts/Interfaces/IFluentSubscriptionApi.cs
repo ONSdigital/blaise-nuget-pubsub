@@ -5,7 +5,8 @@ namespace Blaise.Nuget.PubSub.Contracts.Interfaces
     {
         IFluentSubscriptionApi ForSubscription(string subscriptionId);
 
-        void StartConsuming(IMessageHandler messageHandler, int stopConsumingAfterSeconds = 0);
+        //blocking call
+        void StartConsuming(IMessageHandler messageHandler);
 
         void StopConsuming();
     }

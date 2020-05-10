@@ -59,14 +59,16 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             var message2 = $"Why, Hello {Guid.NewGuid()}";
             var message3 = $"Yo, Yo {Guid.NewGuid()}";
 
+            //act
+            Task.Run(() => _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler));
+
             PublishMessage(message1);
             PublishMessage(message2);
             PublishMessage(message3);
 
-            //act
-            _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler, 60);
-
             await Task.Delay(5000); // allow time for processing the messages off the queue
+
+            _sut.StopConsuming();
 
             //assert
             Assert.IsNotNull(_messageHandler.MessagesHandled);
@@ -84,7 +86,36 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             Assert.AreEqual("No subscriptons have been setup", exception.Message);
 
         }
-     
+
+        [Test]
+        public async Task Given_Subsription_Setup_When_I_Call_StartConsuming_Then_No_More_Messages_Are_Processed()
+        {
+            //arrange
+            var message1 = $"Hello, world {Guid.NewGuid()}";
+
+            //act && assert
+            Task.Run(() => _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler));
+
+            PublishMessage(message1);
+
+            await Task.Delay(5000); // allow time for processing the messages off the queue
+
+            //assert
+            Assert.IsNotNull(_messageHandler.MessagesHandled);
+            Assert.AreEqual(1, _messageHandler.MessagesHandled.Count);
+            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
+
+            _sut.StopConsuming();
+
+            PublishMessage(message1);
+
+            await Task.Delay(5000); // allow time for processing the messages off the queue
+
+            Assert.IsNotNull(_messageHandler.MessagesHandled);
+            Assert.AreEqual(1, _messageHandler.MessagesHandled.Count);
+            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
+        }
+
         private void PublishMessage(string message)
         {
             _publisherService.PublishMessage(_projectId, _topicId, message);

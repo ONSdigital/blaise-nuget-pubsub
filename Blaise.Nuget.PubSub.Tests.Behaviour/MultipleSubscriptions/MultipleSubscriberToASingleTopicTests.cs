@@ -2,7 +2,6 @@
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
@@ -55,6 +54,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
+            var message2 = $"Why, Hello {Guid.NewGuid()}";
+            var message3 = $"Yo, Yo {Guid.NewGuid()}";
 
             var messageHandler1 = new TestMessageHandler();
             var messageHandler2 = new TestMessageHandler();
@@ -62,24 +63,32 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
             var sut1 = new SubscriberService();
             var sut2 = new SubscriberService();
 
-            PublishMessage(message1);
-
             //act
-            sut1.StartConsuming(_projectId, _subscription1Id, messageHandler1, 60);
-            sut2.StartConsuming(_projectId, _subscription2Id, messageHandler2, 60);
+            Task.Run(()=>  sut1.StartConsuming(_projectId, _subscription1Id, messageHandler1));
+            Task.Run(() => sut2.StartConsuming(_projectId, _subscription2Id, messageHandler2));
+            PublishMessage(message1);
+            PublishMessage(message2);
+            PublishMessage(message3);
 
             await Task.Delay(10000); // allow time for processing the messages off the queue
+
+            sut1.StopConsuming();
+            sut2.StopConsuming();
 
             //assert
             Assert.IsNotNull(messageHandler1.MessagesHandled);
             Assert.IsNotNull(messageHandler2.MessagesHandled);
 
-            Assert.AreEqual(1, messageHandler1.MessagesHandled.Count);
-            Assert.AreEqual(1, messageHandler2.MessagesHandled.Count);
+            Assert.AreEqual(3, messageHandler1.MessagesHandled.Count);
+            Assert.AreEqual(3, messageHandler2.MessagesHandled.Count);
 
             Assert.IsTrue(messageHandler1.MessagesHandled.Contains(message1));
+            Assert.IsTrue(messageHandler1.MessagesHandled.Contains(message2));
+            Assert.IsTrue(messageHandler1.MessagesHandled.Contains(message3));
 
             Assert.IsTrue(messageHandler2.MessagesHandled.Contains(message1));
+            Assert.IsTrue(messageHandler2.MessagesHandled.Contains(message2));
+            Assert.IsTrue(messageHandler2.MessagesHandled.Contains(message3));
         }
      
         private void PublishMessage(string message)

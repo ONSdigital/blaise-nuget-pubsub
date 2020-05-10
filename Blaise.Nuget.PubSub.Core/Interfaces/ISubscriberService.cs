@@ -4,7 +4,7 @@ namespace Blaise.Nuget.PubSub.Core.Interfaces
 {
     public interface ISubscriberService
     {
-        void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler, int stopConsumingAfterSeconds = 0);
+        void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler);
 
         void StopConsuming();
     }
