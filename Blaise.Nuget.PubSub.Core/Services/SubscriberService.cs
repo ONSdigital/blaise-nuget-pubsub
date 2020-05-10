@@ -24,7 +24,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
             cancelSubscriptionTask.WaitAndUnwrapException();
         }
 
-        public async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageHandler messageHandler, int stopConsumingAfterSeconds = 0)
+        private async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageHandler messageHandler, int stopConsumingAfterSeconds = 0)
         {
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
             _subscriberClient = await SubscriberClient.CreateAsync(subscriptionName);
@@ -47,7 +47,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
             });
         }
 
-        public async Task StopConsumingAsync()
+        private async Task StopConsumingAsync()
         {
             if(_subscriberClient == null)
             {

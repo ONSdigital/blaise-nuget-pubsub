@@ -2,7 +2,7 @@
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
@@ -55,7 +55,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
         [Test]
         [Ignore("Functionality not fully complete")]
-        public void Given_DeadLetterSubscription_When_The_Maximum_Number_Of_Retries_Are_Reached_Then_The_Three_Message_Is_Moved_To_The_DeadLetter_Queue()
+        public async Task Given_DeadLetterSubscription_When_The_Maximum_Number_Of_Retries_Are_Reached_Then_The_Three_Message_Is_Moved_To_The_DeadLetter_Queue()
         {
             //arrange
             var message = $"Hello, world {Guid.NewGuid()}";
@@ -72,7 +72,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //act
             _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler);
 
-            Thread.Sleep(20000); // allow time for processing the messages off the queue
+            await Task.Delay(5000); // allow time for processing the messages off the queue
 
             _sut.StopConsuming();
 

@@ -3,6 +3,7 @@ using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
 {
@@ -50,7 +51,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
         }
 
         [Test]
-        public void Given_Two_Subscriptions_To_A_Topic_When_Messages_Are_Published_Both_Susbcriptions_Should_Get_The_Messages()
+        public async Task Given_Two_Subscriptions_To_A_Topic_When_Messages_Are_Published_Both_Susbcriptions_Should_Get_The_Messages()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
@@ -67,7 +68,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
             sut1.StartConsuming(_projectId, _subscription1Id, messageHandler1, 60);
             sut2.StartConsuming(_projectId, _subscription2Id, messageHandler2, 60);
 
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
+            await Task.Delay(10000); // allow time for processing the messages off the queue
 
             //assert
             Assert.IsNotNull(messageHandler1.MessagesHandled);

@@ -2,7 +2,7 @@
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
@@ -52,7 +52,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_Three_Messages_Are_Available_When_I_Call_StartConsuming_Then_The_Three_Messages_Are_Processed()
+        public async Task Given_Three_Messages_Are_Available_When_I_Call_StartConsuming_Then_The_Three_Messages_Are_Processed()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
@@ -66,7 +66,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //act
             _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler, 60);
 
-            Thread.Sleep(20000); // allow time for processing the messages off the queue
+            await Task.Delay(5000); // allow time for processing the messages off the queue
 
             //assert
             Assert.IsNotNull(_messageHandler.MessagesHandled);
