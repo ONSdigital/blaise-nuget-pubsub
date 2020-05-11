@@ -65,8 +65,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
             var sut2 = new SubscriberService();
 
             //act
-            Task.Run(()=>  sut1.StartConsuming(_projectId, _subscription1Id, messageHandler1));
-            Task.Run(() => sut2.StartConsuming(_projectId, _subscription2Id, messageHandler2));
+            sut1.StartConsuming(_projectId, _subscription1Id, messageHandler1);
+            sut2.StartConsuming(_projectId, _subscription2Id, messageHandler2);
 
             PublishMessage(message1);
             PublishMessage(message2);

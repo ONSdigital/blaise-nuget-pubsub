@@ -62,10 +62,10 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
            
             //act
-            Task.Run(() => _sut
+            _sut
                 .ForProject(_projectId)
                 .ForSubscription(_subscriptionId)
-                .StartConsuming(_messageHandler));
+                .StartConsuming(_messageHandler);
 
             PublishMessage(message1);
             PublishMessage(message2);
@@ -91,10 +91,10 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             var message2 = $"Why, Hello {Guid.NewGuid()}";
 
             //act
-            Task.Run(() => _sut
+            _sut
                .ForProject(_projectId)
                .ForSubscription(_subscriptionId)
-               .StartConsuming(_messageHandler));
+               .StartConsuming(_messageHandler);
 
             PublishMessage(message1);
 
@@ -102,7 +102,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
             _sut.StopConsuming();
 
-            PublishMessage(message1);
+            PublishMessage(message2);
 
             Thread.Sleep(5000); // allow time for processing the messages off the queue
 

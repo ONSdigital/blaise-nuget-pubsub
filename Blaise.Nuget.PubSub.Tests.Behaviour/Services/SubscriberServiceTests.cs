@@ -61,7 +61,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             var message3 = $"Yo, Yo {Guid.NewGuid()}";
 
             //act
-            Task.Run(() => _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler));
+            _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler);
 
             PublishMessage(message1);
             PublishMessage(message2);
