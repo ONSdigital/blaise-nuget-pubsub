@@ -3,7 +3,6 @@ using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
@@ -95,7 +94,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             var message1 = $"Hello, world {Guid.NewGuid()}";
 
             //act && assert
-            Task.Run(() => _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler));
+           _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler);
 
             PublishMessage(message1);
 

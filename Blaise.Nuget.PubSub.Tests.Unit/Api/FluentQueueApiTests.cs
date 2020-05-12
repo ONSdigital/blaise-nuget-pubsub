@@ -49,7 +49,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_A_Null_ProjectId_When_I_Call_ForProject_Then_An_ArgumentException_Is_Thrown()
+        public void Given_An_Empty_ProjectId_When_I_Call_ForProject_Then_An_ArgumentException_Is_Thrown()
         {
             //act && assert
             var exception = Assert.Throws<ArgumentException>(() => _sut.ForProject(string.Empty));
@@ -57,7 +57,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_An_Empty_ProjectId_When_I_Call_ForProject_Then_An_ArgumentNullException_Is_Thrown()
+        public void Given_A_Null_ProjectId_When_I_Call_ForProject_Then_An_ArgumentNullException_Is_Thrown()
         {
             //act && assert
             var exception = Assert.Throws<ArgumentNullException>(() => _sut.ForProject(null));
@@ -103,7 +103,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_A_Null_TopicId_When_I_Call_CreateTopic_Then_An_ArgumentException_Is_Thrown()
+        public void Given_An_Empty_TopicId_When_I_Call_CreateTopic_Then_An_ArgumentException_Is_Thrown()
         {
             //act && assert
             var exception = Assert.Throws<ArgumentException>(() => _sut.CreateTopic(string.Empty));
@@ -111,7 +111,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_An_Empty_TopicId_When_I_Call_CreateTopic_Then_An_ArgumentNullException_Is_Thrown()
+        public void Given_A_Null_TopicId_When_I_Call_CreateTopic_Then_An_ArgumentNullException_Is_Thrown()
         {
             //act && assert
             var exception = Assert.Throws<ArgumentNullException>(() => _sut.CreateTopic(null));
@@ -145,7 +145,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_A_Null_TopicId_When_I_Call_ForTopic_Then_An_ArgumentException_Is_Thrown()
+        public void Given_An_Empty_TopicId_When_I_Call_ForTopic_Then_An_ArgumentException_Is_Thrown()
         {
             //act && assert
             var exception = Assert.Throws<ArgumentException>(() => _sut.ForTopic(string.Empty));
@@ -153,7 +153,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_An_Empty_TopicId_When_I_Call_ForTopic_Then_An_ArgumentNullException_Is_Thrown()
+        public void Given_A_Null_TopicId_When_I_Call_ForTopic_Then_An_ArgumentNullException_Is_Thrown()
         {
             //act && assert
             var exception = Assert.Throws<ArgumentNullException>(() => _sut.ForTopic(null));
@@ -288,7 +288,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_A_Null_SubscriptionId_When_I_Call_CreateSubscription_Then_An_ArgumentException_Is_Thrown()
+        public void Given_An_Empty_SubscriptionId_When_I_Call_CreateSubscription_Then_An_ArgumentException_Is_Thrown()
         {
             //arrange 
             var messageTimeoutInSeconds = 60;
@@ -299,7 +299,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_An_Empty_SubscriptionId_When_I_Call_CreateSubscription_Then_An_ArgumentNullException_Is_Thrown()
+        public void Given_A_Null_SubscriptionId_When_I_Call_CreateSubscription_Then_An_ArgumentNullException_Is_Thrown()
         {
             //arrange 
             var messageTimeoutInSeconds = 60;
@@ -346,7 +346,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_A_Null_SubscriptionId_When_I_Call_ForSubscription_Then_An_ArgumentException_Is_Thrown()
+        public void Given_An_Empty_SubscriptionId_When_I_Call_ForSubscription_Then_An_ArgumentException_Is_Thrown()
         {
             //act && assert
             var exception = Assert.Throws<ArgumentException>(() => _sut.ForSubscription(string.Empty));
@@ -354,7 +354,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_An_Empty_SubscriptionId_When_I_Call_ForSubscription_Then_An_ArgumentNullException_Is_Thrown()
+        public void Given_A_Null_SubscriptionId_When_I_Call_ForSubscription_Then_An_ArgumentNullException_Is_Thrown()
         {
             //act && assert
             var exception = Assert.Throws<ArgumentNullException>(() => _sut.ForSubscription(null));
