@@ -16,7 +16,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
             publisherServiceClient.Publish(topicName, new[] { pubsubMessage });
         }
 
-        private PubsubMessage BuildPubsubMessage(string message, Dictionary<string, string> attributes)
+        private static PubsubMessage BuildPubsubMessage(string message, IDictionary<string, string> attributes)
         {
             if (attributes == null)
             {

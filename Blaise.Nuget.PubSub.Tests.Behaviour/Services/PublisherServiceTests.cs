@@ -2,6 +2,8 @@
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
@@ -61,6 +63,23 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //assert
             Assert.IsNotNull(result);
             Assert.AreEqual(message, result);
+        }
+
+        [Test]
+        public void Given_A_Message_With_Attributes_When_I_Call_PublishMessage_Then_The_Message_With_Atrributes_Is_Published()
+        {
+            //arrange
+            var message = $"Hello, world {Guid.NewGuid()}";
+            var messageAttributes = new Dictionary<string, string> {{"Header", "TestMessage"}};
+
+            //act
+            _sut.PublishMessage(_projectId, _topicId, message, messageAttributes);
+            var result = _messageHelper.GetMessageAttributes(_projectId, _subscriptionId);
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(messageAttributes["Header"], result["Header"]);
         }
     }
 }

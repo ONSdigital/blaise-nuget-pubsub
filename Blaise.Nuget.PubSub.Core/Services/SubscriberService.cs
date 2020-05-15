@@ -35,12 +35,10 @@ namespace Blaise.Nuget.PubSub.Core.Services
             {               
                 var message = msg.Data.ToStringUtf8();
 
-                if (messageHandler.HandleMessage(message))
-                {
-                    return Task.FromResult(SubscriberClient.Reply.Ack);
-                }
+                return Task.FromResult(messageHandler.HandleMessage(message) 
+                    ? SubscriberClient.Reply.Ack 
+                    : SubscriberClient.Reply.Nack);
 
-                return Task.FromResult(SubscriberClient.Reply.Nack);
             }).ConfigureAwait(false);
             #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }

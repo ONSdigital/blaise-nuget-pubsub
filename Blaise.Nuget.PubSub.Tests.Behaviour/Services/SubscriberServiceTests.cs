@@ -17,6 +17,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private TopicService _topicService;
         private SubscriptionService _subscriptionService;
         private PublisherService _publisherService;
+        private MessageHelper _messageHelper;
 
         private SubscriberService _sut;
 
@@ -37,6 +38,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _topicService = new TopicService();
             _subscriptionService = new SubscriptionService();
             _publisherService = new PublisherService();
+            _messageHelper = new MessageHelper();
 
             _topicService.CreateTopic(_projectId, _topicId);
             _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
@@ -79,16 +81,43 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
+        public void
+            Given_A_Message_cannot_Be_Processed_When_I_Call_StartConsuming_Then_The_Message_Remains_on_The_Subscription()
+        {
+            //arrange
+            var message = $"Hello, world {Guid.NewGuid()}";
+
+            //act
+            _sut.StartConsuming(_projectId, _subscriptionId, _messageHandler);
+
+            PublishMessage(message);
+
+            Thread.Sleep(1000); // allow time for processing the messages off the queue
+
+            _sut.StopConsuming();
+
+            Thread.Sleep(10000); // allow time for processing the messages off the queue
+
+            var result = _messageHelper.GetMessage(_projectId, _subscriptionId);
+
+            //assert
+            Assert.IsNotNull(_messageHandler.MessagesHandled);
+            Assert.AreEqual(0, _messageHandler.MessagesHandled.Count);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(message, result);
+        }
+
+        [Test]
         public void Given_No_Subscriptions_When_I_Call_StopConsuming_Then_InvalidOperationException_Is_Thrown()
         {
             //act && assert
             var exception = Assert.Throws<InvalidOperationException>(() => _sut.StopConsuming());
             Assert.AreEqual("No subscriptions have been setup", exception.Message);
-
         }
 
         [Test]
-        public void Given_Subscription_Setup_When_I_Call_StartConsuming_Then_No_More_Messages_Are_Processed()
+        public void Given_Subscription_Setup_When_I_Call_StopConsuming_Then_No_More_Messages_Are_Processed()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
