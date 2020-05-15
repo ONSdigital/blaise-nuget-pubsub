@@ -1,13 +1,11 @@
-﻿
+﻿using System;
+using System.Threading;
 using Blaise.Nuget.PubSub.Api;
 using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
+namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 {
     public class FluentApiSubscriberTests
     {
@@ -117,7 +115,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         {
             //act && assert
             var exception = Assert.Throws<InvalidOperationException>(() => _sut.StopConsuming());
-            Assert.AreEqual("No subscriptons have been setup", exception.Message);
+            Assert.AreEqual("No subscriptions have been setup", exception.Message);
 
         }
 

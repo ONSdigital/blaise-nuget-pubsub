@@ -5,7 +5,5 @@ namespace Blaise.Nuget.PubSub.Core.Interfaces
     public interface ITopicService
     {
         Topic CreateTopic(string projectId, string topicId);
-
-        Topic GetTopic(string projectId, string topicId);
     }
 }

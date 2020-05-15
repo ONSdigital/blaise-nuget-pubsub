@@ -35,7 +35,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_A_Topic_Doesnt_Exist_When_I_Call_TopicExists_Then_False_Is_Returned()
+        public void Given_A_Topic_Does_Not_Exist_When_I_Call_TopicExists_Then_False_Is_Returned()
         {
             //arrange
             var topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
@@ -66,7 +66,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_A_Topic_Doesnt_Exist_When_I_Call_CreateTopic_The_Topic_Is_Created()
+        public void Given_A_Topic_Does_Not_Exist_When_I_Call_CreateTopic_The_Topic_Is_Created()
         {
             //arrange
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
@@ -109,7 +109,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_A_Topic_Doesnt_Exist_When_I_Call_DeleteTopic_The_An_Exception_Is_Not_Thrown()
+        public void Given_A_Topic_Does_Not_Exist_When_I_Call_DeleteTopic_The_An_Exception_Is_Not_Thrown()
         {
             //arrange
             var topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";

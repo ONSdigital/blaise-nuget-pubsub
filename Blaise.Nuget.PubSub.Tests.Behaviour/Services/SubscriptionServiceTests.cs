@@ -47,7 +47,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }    
 
         [Test]
-        public void Given_A_Subscription_Doesnt_Exist_When_I_Call_SubscriptionExists_Then_False_Is_Returned()
+        public void Given_A_Subscription_Does_Not_Exist_When_I_Call_SubscriptionExists_Then_False_Is_Returned()
         {
             //arrange
             var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
@@ -78,7 +78,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_A_Subscription_Doesnt_Exist_When_I_Call_CreateSubscription_The_Subscription_Is_Created()
+        public void Given_A_Subscription_Does_Not_Exist_When_I_Call_CreateSubscription_The_Subscription_Is_Created()
         {
             //arrange
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
@@ -147,7 +147,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_A_Subscription_Doesnt_Exist_When_I_Call_DeleteSubscription_The_An_Exception_Is_Not_Thrown()
+        public void Given_A_Subscription_Does_Not_Exist_When_I_Call_DeleteSubscription_The_An_Exception_Is_Not_Thrown()
         {
             //arrange
             var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";

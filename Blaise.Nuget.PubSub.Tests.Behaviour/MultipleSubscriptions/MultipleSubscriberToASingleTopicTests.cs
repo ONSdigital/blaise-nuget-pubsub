@@ -3,7 +3,6 @@ using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
 {
@@ -51,7 +50,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
         }
 
         [Test]
-        public void Given_Two_Subscriptions_To_A_Topic_When_Messages_Are_Published_Both_Susbcriptions_Should_Get_The_Messages()
+        public void Given_Two_Subscriptions_To_A_Topic_When_Messages_Are_Published_Both_Subscriptions_Should_Get_The_Messages()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";

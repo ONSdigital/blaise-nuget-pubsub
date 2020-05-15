@@ -41,7 +41,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _topicService.CreateTopic(_projectId, _topicId);
             _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
 
-            _sut = new SubscriberService();
+            _sut = new SubscriberService(); 
         }
 
         [TearDown]
@@ -83,12 +83,12 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         {
             //act && assert
             var exception = Assert.Throws<InvalidOperationException>(() => _sut.StopConsuming());
-            Assert.AreEqual("No subscriptons have been setup", exception.Message);
+            Assert.AreEqual("No subscriptions have been setup", exception.Message);
 
         }
 
         [Test]
-        public void Given_Subsription_Setup_When_I_Call_StartConsuming_Then_No_More_Messages_Are_Processed()
+        public void Given_Subscription_Setup_When_I_Call_StartConsuming_Then_No_More_Messages_Are_Processed()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";

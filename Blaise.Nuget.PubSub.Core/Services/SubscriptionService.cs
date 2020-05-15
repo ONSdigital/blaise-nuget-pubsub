@@ -61,12 +61,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
 
         private SubscriberServiceApiClient GetSubscriberClient()
         {
-            if (_subscriberServiceClient == null)
-            {
-                _subscriberServiceClient = SubscriberServiceApiClient.Create();
-            }
-
-            return _subscriberServiceClient;
+            return _subscriberServiceClient ?? (_subscriberServiceClient = SubscriberServiceApiClient.Create());
         }
     }
 }

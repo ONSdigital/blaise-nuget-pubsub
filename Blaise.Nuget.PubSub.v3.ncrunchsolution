@@ -1,0 +1,12 @@
+﻿<SolutionConfiguration>
+  <Settings>
+    <AllowParallelTestExecution>False</AllowParallelTestExecution>
+    <MetricsExclusionList>
+      <Value>Blaise.Nuget.PubSub.Tests.Unit\Blaise.Nuget.PubSub.Tests.Unit.csproj\Properties</Value>
+      <Value>Blaise.Nuget.PubSub.Tests.Behaviour\Blaise.Nuget.PubSub.Tests.Behaviour.csproj\Properties</Value>
+      <Value>Blaise.Nuget.PubSub.Core\Blaise.Nuget.PubSub.Core.csproj\Properties</Value>
+      <Value>Blaise.Nuget.PubSub.Core\Blaise.Nuget.PubSub.Core.csproj\Interfaces</Value>
+    </MetricsExclusionList>
+    <SolutionConfigured>True</SolutionConfigured>
+  </Settings>
+</SolutionConfiguration>

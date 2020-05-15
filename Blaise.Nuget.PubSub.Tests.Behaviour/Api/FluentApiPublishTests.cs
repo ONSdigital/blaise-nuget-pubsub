@@ -1,10 +1,10 @@
-﻿
+﻿using System;
 using Blaise.Nuget.PubSub.Api;
 using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
-using System;
-namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
+
+namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 {
     public class FluentApiPublishTests
     {

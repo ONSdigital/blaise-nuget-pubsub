@@ -120,13 +120,10 @@
     <Compile Include="Helpers\AuthorizationHelper.cs" />
     <Compile Include="Helpers\MessageHelper.cs" />
     <Compile Include="Helpers\TestMessageHandler.cs" />
-    <Compile Include="Helpers\TidyUpRedundantTopics.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MultipleSubscriptions\PublishToSingleTopicWithMultipleSubscriptionsTests.cs" />
-    <Compile Include="Services\SubscriberServiceDeadLetterTests.cs" />
     <Compile Include="MultipleSubscriptions\MultipleSubscriberToASingleTopicTests.cs" />
     <Compile Include="Services\SubscriberServiceTests.cs" />
-    <Compile Include="Services\DeadLetterSubscriptionServiceTests.cs" />
     <Compile Include="Services\TopicServiceTests.cs" />
     <Compile Include="Services\SubscriptionServiceTests.cs" />
     <Compile Include="Services\PublisherServiceTests.cs" />

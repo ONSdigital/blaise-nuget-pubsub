@@ -49,7 +49,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
         {
             if(_subscriberClient == null)
             {
-                throw new InvalidOperationException("No subscriptons have been setup");
+                throw new InvalidOperationException("No subscriptions have been setup");
             }
 
             await _subscriberClient.StopAsync(CancellationToken.None).ConfigureAwait(false);

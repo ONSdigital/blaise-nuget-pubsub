@@ -54,12 +54,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
 
         private PublisherServiceApiClient GetPublisherClient()
         {
-            if (_publisherServiceClient == null)
-            {
-                _publisherServiceClient = PublisherServiceApiClient.Create();
-            }
-
-            return _publisherServiceClient;
+            return _publisherServiceClient ?? (_publisherServiceClient = PublisherServiceApiClient.Create());
         }
     }
 }
