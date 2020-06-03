@@ -39,7 +39,7 @@ namespace Blaise.Nuget.PubSub.Api
             unityContainer.RegisterType<IPublisherService, PublisherService>();
             unityContainer.RegisterType<ISubscriptionService, SubscriptionService>();
             unityContainer.RegisterType<ITopicService, TopicService>();
-            unityContainer.RegisterType<ISubscriberService, SubscriberService>();
+            unityContainer.RegisterSingleton<ISubscriberService, SubscriberService>();
 
             _publisherService = unityContainer.Resolve<IPublisherService>();
             _subscriptionService = unityContainer.Resolve<ISubscriptionService>();

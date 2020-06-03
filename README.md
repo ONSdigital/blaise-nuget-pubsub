@@ -60,3 +60,5 @@ To publish to a topic, you simply need to provide the projectId, topicId and a J
         .ForProject('projectId')
         .ForTopic('topicId')
         .Publish('message');
+		
+Copyright (c) 2019 Crown Copyright (Government Digital Service)		
