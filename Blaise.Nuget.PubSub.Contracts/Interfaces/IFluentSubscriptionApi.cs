@@ -5,8 +5,8 @@ namespace Blaise.Nuget.PubSub.Contracts.Interfaces
     {
         IFluentSubscriptionApi ForSubscription(string subscriptionId);
 
-        //blocking call
-        void StartConsuming(IMessageHandler messageHandler);
+        //used to throttle message flow to one message at a time
+        void StartConsuming(IMessageHandler messageHandler, bool throttle = false);
 
         void StopConsuming();
     }

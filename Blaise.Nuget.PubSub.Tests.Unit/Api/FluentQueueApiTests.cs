@@ -379,7 +379,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_Previous_Steps_Are_Setup_When_I_Call_StartConsuming_Then_It_Calls_The_Correct_Service_Method()
+        public void Given_Previous_Steps_Are_Setup_And_I_Do_Not_Supply_Throttle_When_I_Call_StartConsuming_Then_It_Calls_The_Correct_Service_Method()
         {
             //arrange
             var projectId = "Project123";
@@ -387,7 +387,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var messageHandler = new TestMessageHandler();
 
 
-            _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IMessageHandler>()));
+            _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IMessageHandler>(), It.IsAny<bool>()));
 
             _sut.ForProject(projectId);
             _sut.ForSubscription(subscriptionId);
@@ -396,8 +396,30 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.StartConsuming(messageHandler);
 
             //assert
-            _subscriberServiceMock.Verify(v => v.StartConsuming(projectId, subscriptionId, messageHandler));
-        }     
+            _subscriberServiceMock.Verify(v => v.StartConsuming(projectId, subscriptionId, messageHandler, false));
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Given_Previous_Steps_Are_Setup_And_I_Supply_Throttle_When_I_Call_StartConsuming_Then_It_Calls_The_Correct_Service_Method(bool throttle)
+        {
+            //arrange
+            var projectId = "Project123";
+            var subscriptionId = "Subscription123";
+            var messageHandler = new TestMessageHandler();
+
+
+            _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IMessageHandler>(), It.IsAny<bool>()));
+
+            _sut.ForProject(projectId);
+            _sut.ForSubscription(subscriptionId);
+
+            //act
+            _sut.StartConsuming(messageHandler, throttle);
+
+            //assert
+            _subscriberServiceMock.Verify(v => v.StartConsuming(projectId, subscriptionId, messageHandler, throttle));
+        }
 
         [Test]
         public void Given_TopicId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_Then_A_NullReferenceExceptionIs_Thrown()

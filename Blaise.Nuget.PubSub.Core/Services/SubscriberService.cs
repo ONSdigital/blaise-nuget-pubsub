@@ -5,6 +5,7 @@ using Nito.AsyncEx.Synchronous;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Google.Api.Gax;
 
 namespace Blaise.Nuget.PubSub.Core.Services
 {
@@ -12,9 +13,9 @@ namespace Blaise.Nuget.PubSub.Core.Services
     {
         private SubscriberClient _subscriberClient;
 
-        public void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler)
+        public void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler, bool throttle = false)
         {
-            var createSubscriptionTask = StartConsumingAsync(projectId, subscriptionId, messageHandler);
+            var createSubscriptionTask = StartConsumingAsync(projectId, subscriptionId, messageHandler, throttle);
             createSubscriptionTask.WaitAndUnwrapException();
         }
 
@@ -24,10 +25,15 @@ namespace Blaise.Nuget.PubSub.Core.Services
             cancelSubscriptionTask.WaitAndUnwrapException();
         }
 
-        private async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageHandler messageHandler)
+        private async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageHandler messageHandler, bool throttle)
         {
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
-            _subscriberClient = await SubscriberClient.CreateAsync(subscriptionName);
+
+            var settings = throttle
+                ? new SubscriberClient.Settings {FlowControlSettings = new FlowControlSettings(1L, null)}
+                : null;
+
+            _subscriberClient = await SubscriberClient.CreateAsync(subscriptionName, null, settings);
 
             //Blame google
             #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed

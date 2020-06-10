@@ -51,7 +51,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         }
 
         [Test]
-        public void Given_There_Are_Three_Available_When_I_Call_StartConsuming_Using_FluentApi_Then_The_Three_Messages_Are_Processed()
+        public void Given_There_Are_Three_Available_And_I_Do_Not_Supply_Throttle_When_I_Call_StartConsuming_Using_FluentApi_Then_The_Three_Messages_Are_Processed()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
@@ -79,7 +79,40 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message2));
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message3));
-        }     
+        }
+
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Given_There_Are_Three_Available_And_I_Supply_Throttle_When_I_Call_StartConsuming_Using_FluentApi_Then_The_Three_Messages_Are_Processed(bool throttle)
+        {
+            //arrange
+            var message1 = $"Hello, world {Guid.NewGuid()}";
+            var message2 = $"Why, Hello {Guid.NewGuid()}";
+            var message3 = $"Yo, Yo {Guid.NewGuid()}";
+
+
+            //act
+            _sut
+                .ForProject(_projectId)
+                .ForSubscription(_subscriptionId)
+                .StartConsuming(_messageHandler, throttle);
+
+            PublishMessage(message1);
+            PublishMessage(message2);
+            PublishMessage(message3);
+
+            Thread.Sleep(5000); // allow time for processing the messages off the queue
+
+            _sut.StopConsuming();
+
+            //assert
+            Assert.IsNotNull(_messageHandler.MessagesHandled);
+            Assert.AreEqual(3, _messageHandler.MessagesHandled.Count);
+            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
+            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message2));
+            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message3));
+        }
 
         [Test]
         public void Given_Subscribe_To_One_Message_When_I_Call_StopConsuming_Using_FluentApi_Then_Subsequent_Messages_Are_Not_Handled()
