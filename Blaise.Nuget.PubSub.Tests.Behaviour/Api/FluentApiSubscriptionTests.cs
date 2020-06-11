@@ -81,37 +81,70 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message3));
         }
 
-
-        [TestCase(true)]
-        [TestCase(false)]
-        public void Given_There_Are_Three_Available_And_I_Supply_Throttle_When_I_Call_StartConsuming_Using_FluentApi_Then_The_Three_Messages_Are_Processed(bool throttle)
+        [Test]
+        public void Given_I_Throttle_When_I_Call_StartConsuming_Using_FluentApi_Then_The_Messages_Are_Processed_One_At_A_Time()
         {
             //arrange
             var message1 = $"Hello, world {Guid.NewGuid()}";
             var message2 = $"Why, Hello {Guid.NewGuid()}";
             var message3 = $"Yo, Yo {Guid.NewGuid()}";
 
+            var concurrencyHandler = new TestConcurrencyMessageHandler(2);
 
             //act
             _sut
                 .ForProject(_projectId)
                 .ForSubscription(_subscriptionId)
-                .StartConsuming(_messageHandler, throttle);
+                .StartConsuming(concurrencyHandler, true);
 
             PublishMessage(message1);
             PublishMessage(message2);
             PublishMessage(message3);
 
-            Thread.Sleep(5000); // allow time for processing the messages off the queue
+            Thread.Sleep(10000); // allow time for processing the messages off the queue
 
             _sut.StopConsuming();
 
             //assert
-            Assert.IsNotNull(_messageHandler.MessagesHandled);
-            Assert.AreEqual(3, _messageHandler.MessagesHandled.Count);
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message2));
-            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message3));
+            Assert.IsNotNull(concurrencyHandler.MessagesHandled);
+            Assert.AreEqual(3, concurrencyHandler.MessagesHandled.Count);
+            Assert.IsTrue(concurrencyHandler.MessagesHandled.Contains(message1));
+            Assert.IsTrue(concurrencyHandler.MessagesHandled.Contains(message2));
+            Assert.IsTrue(concurrencyHandler.MessagesHandled.Contains(message3));
+            Assert.IsFalse(concurrencyHandler.HandledConcurrently());
+        }
+
+        [Test]
+        public void Given_I_Do_Not_Throttle_When_I_Call_StartConsuming_Using_FluentApi_Then_The_Messages_Are_Processed_Concurrently()
+        {
+            //arrange
+            var message1 = $"Hello, world {Guid.NewGuid()}";
+            var message2 = $"Why, Hello {Guid.NewGuid()}";
+            var message3 = $"Yo, Yo {Guid.NewGuid()}";
+
+            var concurrencyHandler = new TestConcurrencyMessageHandler(2);
+
+            //act
+            _sut
+                .ForProject(_projectId)
+                .ForSubscription(_subscriptionId)
+                .StartConsuming(concurrencyHandler, false);
+
+            PublishMessage(message1);
+            PublishMessage(message2);
+            PublishMessage(message3);
+
+            Thread.Sleep(10000); // allow time for processing the messages off the queue
+
+            _sut.StopConsuming();
+
+            //assert
+            Assert.IsNotNull(concurrencyHandler.MessagesHandled);
+            Assert.AreEqual(3, concurrencyHandler.MessagesHandled.Count);
+            Assert.IsTrue(concurrencyHandler.MessagesHandled.Contains(message1));
+            Assert.IsTrue(concurrencyHandler.MessagesHandled.Contains(message2));
+            Assert.IsTrue(concurrencyHandler.MessagesHandled.Contains(message3));
+            Assert.IsTrue(concurrencyHandler.HandledConcurrently());
         }
 
         [Test]

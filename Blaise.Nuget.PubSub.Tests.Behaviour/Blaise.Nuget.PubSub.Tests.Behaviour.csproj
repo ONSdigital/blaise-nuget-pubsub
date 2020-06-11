@@ -119,6 +119,7 @@
     <Compile Include="Api\FluentApiSubscriptionTests.cs" />
     <Compile Include="Helpers\AuthorizationHelper.cs" />
     <Compile Include="Helpers\MessageHelper.cs" />
+    <Compile Include="Helpers\TestConcurrencyMessageHandler.cs" />
     <Compile Include="Helpers\TestMessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MultipleSubscriptions\PublishToSingleTopicWithMultipleSubscriptionsTests.cs" />
