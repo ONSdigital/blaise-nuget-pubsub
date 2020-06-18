@@ -5,6 +5,8 @@ namespace Blaise.Nuget.PubSub.Contracts.Interfaces
     {
         IFluentQueueApi WithTopic(string topicId);
 
+        IFluentQueueApi CreateTopic(string topicId);
+
         void Publish(string message, Dictionary<string, string> attributes = null);
     }
 }
