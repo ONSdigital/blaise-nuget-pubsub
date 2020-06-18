@@ -267,6 +267,26 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
+        public void Given_No_TimeOut_Is_Provided_When_I_Call_CreateSubscription_Then_The_Correct_Default_Time_Is_Used()
+        {
+            //arrange
+            var projectId = "Project123";
+            var topicId = "Topic123";
+            var subscriptionId = "Subscription123";
+
+            _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 0));
+
+            _sut.WithProject(projectId);
+            _sut.WithTopic(topicId);
+
+            //act
+            _sut.CreateSubscription(subscriptionId);
+
+            //assert
+            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, 600));
+        }
+
+        [Test]
         public void Given_Valid_Arguments_When_I_Call_CreateSubscription_Then_It_Returns_Same_Instance_Of_Itself_Back()
         {
             //arrange
