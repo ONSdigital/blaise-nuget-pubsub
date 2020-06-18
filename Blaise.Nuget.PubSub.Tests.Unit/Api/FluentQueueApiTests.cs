@@ -309,6 +309,20 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             Assert.AreEqual("subscriptionId", exception.ParamName);
         }
 
+        [Test]
+        public void Given_ProjectId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_CreateSubscription_Then_A_NullReferenceExceptionIs_Thrown()
+        {
+            //arrange
+            var topicId = "Topic123";
+            var subscriptionId = "Subscription123";
+            var messageTimeoutInSeconds = 60;
+
+            _sut.ForTopic(topicId);
+
+            //act && assert
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds));
+            Assert.AreEqual("The 'ForProject' step needs to be called prior to this", exception.Message);
+        }
 
         [Test]
         public void Given_TopicId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_CreateSubscription_Then_A_NullReferenceExceptionIs_Thrown()
