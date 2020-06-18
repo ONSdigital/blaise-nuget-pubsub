@@ -61,8 +61,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
            
             //act
             _sut
-                .ForProject(_projectId)
-                .ForSubscription(_subscriptionId)
+                .WithProject(_projectId)
+                .WithSubscription(_subscriptionId)
                 .StartConsuming(_messageHandler);
 
             PublishMessage(message1);
@@ -93,8 +93,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 
             //act
             _sut
-                .ForProject(_projectId)
-                .ForSubscription(_subscriptionId)
+                .WithProject(_projectId)
+                .WithSubscription(_subscriptionId)
                 .StartConsuming(concurrencyHandler, true);
 
             PublishMessage(message1);
@@ -126,8 +126,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 
             //act
             _sut
-                .ForProject(_projectId)
-                .ForSubscription(_subscriptionId)
+                .WithProject(_projectId)
+                .WithSubscription(_subscriptionId)
                 .StartConsuming(concurrencyHandler, false);
 
             PublishMessage(message1);
@@ -156,8 +156,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 
             //act
             _sut
-               .ForProject(_projectId)
-               .ForSubscription(_subscriptionId)
+               .WithProject(_projectId)
+               .WithSubscription(_subscriptionId)
                .StartConsuming(_messageHandler);
 
             PublishMessage(message1);
@@ -188,8 +188,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         private void PublishMessage(string message)
         {
             _sut
-                .ForProject(_projectId)
-                .ForTopic(_topicId)
+                .WithProject(_projectId)
+                .WithTopic(_topicId)
                 .Publish(message);
         }
     }

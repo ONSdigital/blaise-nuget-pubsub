@@ -34,13 +34,13 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_Valid_Arguments_When_I_Call_ForProject_Then_It_Returns_Same_Instance_Of_Itself_Back()
+        public void Given_Valid_Arguments_When_I_Call_WithProject_Then_It_Returns_Same_Instance_Of_Itself_Back()
         {
             //arrange
             var projectId = "Project123";
 
             //act
-            var result = _sut.ForProject(projectId);
+            var result = _sut.WithProject(projectId);
 
             //assert
             Assert.IsNotNull(result);
@@ -49,18 +49,18 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_An_Empty_ProjectId_When_I_Call_ForProject_Then_An_ArgumentException_Is_Thrown()
+        public void Given_An_Empty_ProjectId_When_I_Call_WithProject_Then_An_ArgumentException_Is_Thrown()
         {
             //act && assert
-            var exception = Assert.Throws<ArgumentException>(() => _sut.ForProject(string.Empty));
+            var exception = Assert.Throws<ArgumentException>(() => _sut.WithProject(string.Empty));
             Assert.AreEqual("A value for the argument 'projectId' must be supplied", exception.Message);
         }
 
         [Test]
-        public void Given_A_Null_ProjectId_When_I_Call_ForProject_Then_An_ArgumentNullException_Is_Thrown()
+        public void Given_A_Null_ProjectId_When_I_Call_WithProject_Then_An_ArgumentNullException_Is_Thrown()
         {
             //act && assert
-            var exception = Assert.Throws<ArgumentNullException>(() => _sut.ForProject(null));
+            var exception = Assert.Throws<ArgumentNullException>(() => _sut.WithProject(null));
             Assert.AreEqual("projectId", exception.ParamName);
         }
 
@@ -73,7 +73,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             _topicServiceMock.Setup(p => p.CreateTopic(It.IsAny<string>(), It.IsAny<string>()));
 
-            _sut.ForProject(projectId);
+            _sut.WithProject(projectId);
 
             //act
             var result = _sut.CreateTopic(topicId);
@@ -93,7 +93,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             _topicServiceMock.Setup(p => p.CreateTopic(It.IsAny<string>(), It.IsAny<string>()));
 
-            _sut.ForProject(projectId);
+            _sut.WithProject(projectId);
 
             //act
             _sut.CreateTopic(topicId);
@@ -119,24 +119,24 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_ForProject_Has_Not_Been_Called_In_A_Previous_Step_When_I_Call_CreateTopic_Then_A_NullReferenceExceptionIs_Thrown()
+        public void Given_WithProject_Has_Not_Been_Called_In_A_Previous_Step_When_I_Call_CreateTopic_Then_A_NullReferenceExceptionIs_Thrown()
         {
             //arrange
             var topicId = "Topic123";
 
             //act && assert
             var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateTopic(topicId));
-            Assert.AreEqual("The 'ForProject' step needs to be called prior to this", exception.Message);
+            Assert.AreEqual("The 'WithProject' step needs to be called prior to this", exception.Message);
         }
 
         [Test]
-        public void Given_Valid_Arguments_When_I_Call_ForTopic_Then_It_Returns_Same_Instance_Of_Itself_Back()
+        public void Given_Valid_Arguments_When_I_Call_WithTopic_Then_It_Returns_Same_Instance_Of_Itself_Back()
         {
             //arrange
             var topicId = "Topic123";
 
             //act
-            var result = _sut.ForTopic(topicId);
+            var result = _sut.WithTopic(topicId);
 
             //assert
             Assert.IsNotNull(result);
@@ -145,18 +145,18 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_An_Empty_TopicId_When_I_Call_ForTopic_Then_An_ArgumentException_Is_Thrown()
+        public void Given_An_Empty_TopicId_When_I_Call_WithTopic_Then_An_ArgumentException_Is_Thrown()
         {
             //act && assert
-            var exception = Assert.Throws<ArgumentException>(() => _sut.ForTopic(string.Empty));
+            var exception = Assert.Throws<ArgumentException>(() => _sut.WithTopic(string.Empty));
             Assert.AreEqual("A value for the argument 'topicId' must be supplied", exception.Message);
         }
 
         [Test]
-        public void Given_A_Null_TopicId_When_I_Call_ForTopic_Then_An_ArgumentNullException_Is_Thrown()
+        public void Given_A_Null_TopicId_When_I_Call_WithTopic_Then_An_ArgumentNullException_Is_Thrown()
         {
             //act && assert
-            var exception = Assert.Throws<ArgumentNullException>(() => _sut.ForTopic(null));
+            var exception = Assert.Throws<ArgumentNullException>(() => _sut.WithTopic(null));
             Assert.AreEqual("topicId", exception.ParamName);
         }
 
@@ -171,8 +171,8 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             _publisherServiceMock.Setup(p => p.PublishMessage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()));
 
-            _sut.ForProject(projectId);
-            _sut.ForTopic(topicId);
+            _sut.WithProject(projectId);
+            _sut.WithTopic(topicId);
 
             //act
             _sut.Publish(message, attributes);
@@ -191,8 +191,8 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             _publisherServiceMock.Setup(p => p.PublishMessage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()));
 
-            _sut.ForProject(projectId);
-            _sut.ForTopic(topicId);
+            _sut.WithProject(projectId);
+            _sut.WithTopic(topicId);
 
             //act
             _sut.Publish(message);
@@ -218,17 +218,17 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_ForProject_Has_Not_Been_Called_In_A_Previous_Step_When_I_Call_Publish_Then_A_NullReferenceException_Is_Thrown()
+        public void Given_WithProject_Has_Not_Been_Called_In_A_Previous_Step_When_I_Call_Publish_Then_A_NullReferenceException_Is_Thrown()
         {
             //arrange
             var topicId = "Topic123";
             var message = "Message123";
 
-            _sut.ForTopic(topicId);
+            _sut.WithTopic(topicId);
 
             //act && assert
             var exception = Assert.Throws<NullReferenceException>(() => _sut.Publish(message));
-            Assert.AreEqual("The 'ForProject' step needs to be called prior to this", exception.Message);
+            Assert.AreEqual("The 'WithProject' step needs to be called prior to this", exception.Message);
         }
 
         [Test]
@@ -238,11 +238,11 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var projectId = "Project123";
             var message = "Message123";
 
-            _sut.ForProject(projectId);
+            _sut.WithProject(projectId);
 
             //act && assert
             var exception = Assert.Throws<NullReferenceException>(() => _sut.Publish(message));
-            Assert.AreEqual("The 'ForTopic' or 'CreateTopic' step needs to be called prior to this", exception.Message);
+            Assert.AreEqual("The 'WithTopic' or 'CreateTopic' step needs to be called prior to this", exception.Message);
         }
 
         [Test]
@@ -256,8 +256,8 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 0));
 
-            _sut.ForProject(projectId);
-            _sut.ForTopic(topicId);
+            _sut.WithProject(projectId);
+            _sut.WithTopic(topicId);
 
             //act
             _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds);
@@ -275,8 +275,8 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var subscriptionId = "Subscription123";
             var messageTimeoutInSeconds = 60;
 
-            _sut.ForProject(projectId);
-            _sut.ForTopic(topicId);
+            _sut.WithProject(projectId);
+            _sut.WithTopic(topicId);
 
             //act
             var result = _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds);
@@ -317,11 +317,11 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var subscriptionId = "Subscription123";
             var messageTimeoutInSeconds = 60;
 
-            _sut.ForTopic(topicId);
+            _sut.WithTopic(topicId);
 
             //act && assert
             var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds));
-            Assert.AreEqual("The 'ForProject' step needs to be called prior to this", exception.Message);
+            Assert.AreEqual("The 'WithProject' step needs to be called prior to this", exception.Message);
         }
 
         [Test]
@@ -332,26 +332,26 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var subscriptionId = "Subscription123";
             var messageTimeoutInSeconds = 60;
 
-            _sut.ForProject(projectId);
+            _sut.WithProject(projectId);
 
             //act && assert
             var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds));
-            Assert.AreEqual("The 'ForTopic' or 'CreateTopic' step needs to be called prior to this", exception.Message);
+            Assert.AreEqual("The 'WithTopic' or 'CreateTopic' step needs to be called prior to this", exception.Message);
         }
 
         [Test]
-        public void Given_Valid_Arguments_When_I_Call_ForSubscription_Then_It_Returns_Same_Instance_Of_Itself_Back()
+        public void Given_Valid_Arguments_When_I_Call_WithSubscription_Then_It_Returns_Same_Instance_Of_Itself_Back()
         {
             //arrange
             var projectId = "Project123";
             var topicId = "Topic123";
             var subscriptionId = "Subscription123";
 
-            _sut.ForProject(projectId);
-            _sut.ForTopic(topicId);
+            _sut.WithProject(projectId);
+            _sut.WithTopic(topicId);
 
             //act
-            var result = _sut.ForSubscription(subscriptionId);
+            var result = _sut.WithSubscription(subscriptionId);
 
             //assert
             Assert.IsNotNull(result);
@@ -360,18 +360,18 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_An_Empty_SubscriptionId_When_I_Call_ForSubscription_Then_An_ArgumentException_Is_Thrown()
+        public void Given_An_Empty_SubscriptionId_When_I_Call_WithSubscription_Then_An_ArgumentException_Is_Thrown()
         {
             //act && assert
-            var exception = Assert.Throws<ArgumentException>(() => _sut.ForSubscription(string.Empty));
+            var exception = Assert.Throws<ArgumentException>(() => _sut.WithSubscription(string.Empty));
             Assert.AreEqual("A value for the argument 'subscriptionId' must be supplied", exception.Message);
         }
 
         [Test]
-        public void Given_A_Null_SubscriptionId_When_I_Call_ForSubscription_Then_An_ArgumentNullException_Is_Thrown()
+        public void Given_A_Null_SubscriptionId_When_I_Call_WithSubscription_Then_An_ArgumentNullException_Is_Thrown()
         {
             //act && assert
-            var exception = Assert.Throws<ArgumentNullException>(() => _sut.ForSubscription(null));
+            var exception = Assert.Throws<ArgumentNullException>(() => _sut.WithSubscription(null));
             Assert.AreEqual("subscriptionId", exception.ParamName);
         }
 
@@ -383,9 +383,9 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var topicId = "Topic123";
             var subscriptionId = "Subscription123";
 
-            _sut.ForProject(projectId);
-            _sut.ForTopic(topicId);
-            _sut.ForSubscription(subscriptionId);
+            _sut.WithProject(projectId);
+            _sut.WithTopic(topicId);
+            _sut.WithSubscription(subscriptionId);
 
             //act && assert
             var exception = Assert.Throws<ArgumentNullException>(() => _sut.StartConsuming( null));
@@ -403,8 +403,8 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IMessageHandler>(), It.IsAny<bool>()));
 
-            _sut.ForProject(projectId);
-            _sut.ForSubscription(subscriptionId);
+            _sut.WithProject(projectId);
+            _sut.WithSubscription(subscriptionId);
 
             //act
             _sut.StartConsuming(messageHandler);
@@ -425,8 +425,8 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IMessageHandler>(), It.IsAny<bool>()));
 
-            _sut.ForProject(projectId);
-            _sut.ForSubscription(subscriptionId);
+            _sut.WithProject(projectId);
+            _sut.WithSubscription(subscriptionId);
 
             //act
             _sut.StartConsuming(messageHandler, throttle);
@@ -442,11 +442,11 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var subscriptionId = "Subscription123";
             var messageHandler = new TestMessageHandler();
 
-            _sut.ForSubscription(subscriptionId);
+            _sut.WithSubscription(subscriptionId);
 
             //act && assert
             var exception = Assert.Throws<NullReferenceException>(() => _sut.StartConsuming(messageHandler));
-            Assert.AreEqual("The 'ForProject' step needs to be called prior to this", exception.Message);
+            Assert.AreEqual("The 'WithProject' step needs to be called prior to this", exception.Message);
         }
 
         [Test]
@@ -456,11 +456,11 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var projectId = "Project123";
             var messageHandler = new TestMessageHandler();
 
-            _sut.ForProject(projectId);
+            _sut.WithProject(projectId);
 
             //act && assert
             var exception = Assert.Throws<NullReferenceException>(() => _sut.StartConsuming(messageHandler));
-            Assert.AreEqual("The 'ForSubscription' or 'CreateSubscription' step needs to be called prior to this", exception.Message);
+            Assert.AreEqual("The 'WithSubscription' or 'CreateSubscription' step needs to be called prior to this", exception.Message);
         }
 
         [Test]

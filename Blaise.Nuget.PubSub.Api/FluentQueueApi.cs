@@ -47,7 +47,7 @@ namespace Blaise.Nuget.PubSub.Api
             _subscriberService = unityContainer.Resolve<ISubscriberService>();
         }
 
-        public IFluentQueueApi ForProject(string projectId)
+        public IFluentQueueApi WithProject(string projectId)
         {
             projectId.ThrowExceptionIfNullOrEmpty("projectId");
 
@@ -80,7 +80,7 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
-        public IFluentQueueApi ForTopic(string topicId)
+        public IFluentQueueApi WithTopic(string topicId)
         {
             topicId.ThrowExceptionIfNullOrEmpty("topicId");
 
@@ -99,7 +99,7 @@ namespace Blaise.Nuget.PubSub.Api
             _publisherService.PublishMessage(_projectId, _topicId, message, attributes);
         }
 
-        public IFluentSubscriptionApi ForSubscription(string subscriptionId)
+        public IFluentSubscriptionApi WithSubscription(string subscriptionId)
         {
             subscriptionId.ThrowExceptionIfNullOrEmpty("subscriptionId");
 
@@ -127,7 +127,7 @@ namespace Blaise.Nuget.PubSub.Api
         {
             if (string.IsNullOrWhiteSpace(_projectId))
             {
-                throw new NullReferenceException("The 'ForProject' step needs to be called prior to this");
+                throw new NullReferenceException("The 'WithProject' step needs to be called prior to this");
             }
         }
 
@@ -135,7 +135,7 @@ namespace Blaise.Nuget.PubSub.Api
         {
             if (string.IsNullOrWhiteSpace(_topicId))
             {
-                throw new NullReferenceException("The 'ForTopic' or 'CreateTopic' step needs to be called prior to this");
+                throw new NullReferenceException("The 'WithTopic' or 'CreateTopic' step needs to be called prior to this");
             }
         }
 
@@ -143,7 +143,7 @@ namespace Blaise.Nuget.PubSub.Api
         {
             if (string.IsNullOrWhiteSpace(_subscriptionId))
             {
-                throw new NullReferenceException("The 'ForSubscription' or 'CreateSubscription' step needs to be called prior to this");
+                throw new NullReferenceException("The 'WithSubscription' or 'CreateSubscription' step needs to be called prior to this");
             }
         }
     }

@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Blaise.Nuget.PubSub.Api;
 using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
@@ -6,20 +11,21 @@ using NUnit.Framework;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 {
-    public class FluentApiPublishTests
+    public class FluentApiCreateSubscriptionAndConsumeTests
     {
+        private int _messageTimeoutInSeconds;
+
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
-        private int _messageTimeoutInSeconds;
 
-        private MessageHelper _messageHelper;
-        private TopicService _topicService;
+        private TestMessageHandler _messageHandler;
         private SubscriptionService _subscriptionService;
+        private TopicService _topicService;
 
         private FluentQueueApi _sut;
 
-        public FluentApiPublishTests()
+        public FluentApiCreateSubscriptionAndConsumeTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
@@ -27,7 +33,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         [SetUp]
         public void Setup()
         {
-            _messageHelper = new MessageHelper();
+            _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
             _subscriptionService = new SubscriptionService();
 
@@ -36,58 +42,48 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
             _messageTimeoutInSeconds = 60;
 
+            _topicService.CreateTopic(_projectId, _topicId);
+
             _sut = new FluentQueueApi();
         }
 
         [TearDown]
         public void TearDown()
         {
+            _sut.StopConsuming();
             _subscriptionService.DeleteSubscription(_projectId, _subscriptionId);
             _topicService.DeleteTopic(_projectId, _topicId);
         }
 
         [Test]
-        public void Given_A_Message_When_I_Call_PublishMessage_Then_The_Message_Is_Published()
+        public void Given_I_Supply_Valid_Arguments_I_Can_Create_And_Consume_From_A_Subscription_In_One_Call()
         {
             //arrange
-            var message = $"Hello, world {Guid.NewGuid()}";
-
-            _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            var message1 = $"Hello, world {Guid.NewGuid()}";
 
             //act
             _sut
                 .WithProject(_projectId)
                 .WithTopic(_topicId)
-                .Publish(message);
+                .CreateSubscription(_subscriptionId, 600)
+                .StartConsuming(_messageHandler, true);
 
-            var result = _messageHelper.GetMessage(_projectId, _subscriptionId);
+            PublishMessage(message1);
+
+            Thread.Sleep(5000); // allow time for processing the messages off the queue
 
             //assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(message, result);
+            Assert.IsNotNull(_messageHandler.MessagesHandled);
+            Assert.AreEqual(1, _messageHandler.MessagesHandled.Count);
+            Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
         }
 
-        [Test]
-        public void Given_A_Message_When_I_Call_PublishMessage_Using_CreateTopic_Then_The_Message_Is_Published()
+        private void PublishMessage(string message)
         {
-            //arrange
-            var message = $"Hello, world {Guid.NewGuid()}";
-
-            _topicService.CreateTopic(_projectId, _topicId);            
-
-            //act
             _sut
                 .WithProject(_projectId)
-                .CreateTopic(_topicId)
-                .CreateSubscription(_subscriptionId, _messageTimeoutInSeconds)
+                .WithTopic(_topicId)
                 .Publish(message);
-
-            var result = _messageHelper.GetMessage(_projectId, _subscriptionId);
-
-            //assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(message, result);
         }
     }
 }

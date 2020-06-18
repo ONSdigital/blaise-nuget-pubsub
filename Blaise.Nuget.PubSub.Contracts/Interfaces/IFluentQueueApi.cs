@@ -2,7 +2,7 @@
 {
     public interface IFluentQueueApi : IFluentSubscriptionApi, IFluentPublishApi
     {
-        IFluentQueueApi ForProject(string projectId);
+        IFluentQueueApi WithProject(string projectId);
 
         IFluentQueueApi CreateTopic(string topicId);
 

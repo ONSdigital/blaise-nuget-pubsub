@@ -115,6 +115,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\FluentApiCreateSubscriptionAndConsumeTests.cs" />
     <Compile Include="Api\FluentApiPublishTests.cs" />
     <Compile Include="Api\FluentApiSubscriptionTests.cs" />
     <Compile Include="Helpers\AuthorizationHelper.cs" />
