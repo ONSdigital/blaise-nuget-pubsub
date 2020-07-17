@@ -34,9 +34,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _topicService = new TopicService();
             _subscriptionService = new SubscriptionService(new DeadLetterService(_topicService));
 
-            _projectId = "ons-blaise-dev";
-            _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
+            var configurationHelper = new ConfigurationHelper();
+            _projectId = configurationHelper.ProjectId;
+            _topicId = $"{configurationHelper.TopicId}-{Guid.NewGuid()}";
+            _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
+
             _ackTimeoutInSeconds = 60;
             var connectionSettings = new SubscriptionSettingsModel { AckTimeoutInSeconds = _ackTimeoutInSeconds };
 

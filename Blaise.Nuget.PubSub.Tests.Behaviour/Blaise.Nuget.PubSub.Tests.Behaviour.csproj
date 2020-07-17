@@ -120,6 +120,7 @@
     <Compile Include="Api\FluentApiSubscribeAndConsumeTests.cs" />
     <Compile Include="Api\FluentApiPublishTests.cs" />
     <Compile Include="Helpers\AuthorizationHelper.cs" />
+    <Compile Include="Helpers\ConfigurationHelper.cs" />
     <Compile Include="Helpers\MessageHelper.cs" />
     <Compile Include="Helpers\TestConcurrencyMessageHandler.cs" />
     <Compile Include="Helpers\TestMessageHandler.cs" />

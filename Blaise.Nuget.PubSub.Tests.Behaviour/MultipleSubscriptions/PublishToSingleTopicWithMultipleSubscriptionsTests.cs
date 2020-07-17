@@ -29,10 +29,12 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
         [SetUp]
         public void Setup()
         {
-            _projectId = "ons-blaise-dev";
-            _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            _subscription1Id = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-            _subscription2Id = $"blaise-nuget-subscription-{Guid.NewGuid()}";
+            var configurationHelper = new ConfigurationHelper();
+            _projectId = configurationHelper.ProjectId;
+            _topicId = $"{configurationHelper.TopicId}-{Guid.NewGuid()}";
+            _subscription1Id = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
+            _subscription2Id = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
+
             _ackTimeoutInSeconds = 60;
             _settingsModel = new SubscriptionSettingsModel { AckTimeoutInSeconds = _ackTimeoutInSeconds };
 
