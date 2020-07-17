@@ -5,6 +5,7 @@ using Blaise.Nuget.PubSub.Core.Interfaces;
 using Blaise.Nuget.PubSub.Core.Services;
 using System;
 using System.Collections.Generic;
+using Blaise.Nuget.PubSub.Core.Models;
 using Unity;
 
 namespace Blaise.Nuget.PubSub.Api
@@ -20,6 +21,8 @@ namespace Blaise.Nuget.PubSub.Api
         private string _topicId;
         private string _subscriptionId;
 
+        private readonly SubscriptionSettingsModel _subscriptionSettingsModel;
+
         //This constructor is needed for unit testing but should not be visible from services that ingest the package
         internal FluentQueueApi(
             IPublisherService publisherService,
@@ -31,6 +34,8 @@ namespace Blaise.Nuget.PubSub.Api
             _subscriptionService = subscriptionService;
             _topicService = topicService;
             _subscriberService = subscriberService;
+
+            _subscriptionSettingsModel = new SubscriptionSettingsModel();
         }
 
         public FluentQueueApi()
@@ -40,11 +45,14 @@ namespace Blaise.Nuget.PubSub.Api
             unityContainer.RegisterType<ISubscriptionService, SubscriptionService>();
             unityContainer.RegisterType<ITopicService, TopicService>();
             unityContainer.RegisterSingleton<ISubscriberService, SubscriberService>();
+            unityContainer.RegisterSingleton<IDeadLetterService, DeadLetterService>();
 
             _publisherService = unityContainer.Resolve<IPublisherService>();
             _subscriptionService = unityContainer.Resolve<ISubscriptionService>();
             _topicService = unityContainer.Resolve<ITopicService>();
             _subscriberService = unityContainer.Resolve<ISubscriberService>();
+
+            _subscriptionSettingsModel = new SubscriptionSettingsModel();
         }
 
         public IFluentQueueApi WithProject(string projectId)
@@ -68,14 +76,23 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
-        public IFluentQueueApi CreateSubscription(string subscriptionId, int messageTimeoutInSeconds = 600)
+        public IFluentQueueApi CreateSubscription(string subscriptionId, int ackTimeoutInSeconds = 600)
         {
             subscriptionId.ThrowExceptionIfNullOrEmpty("subscriptionId");
             ValidateProjectIdIsSet();
             ValidateTopicIdIsSet();
 
-            _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, messageTimeoutInSeconds);
+            _subscriptionSettingsModel.AckTimeoutInSeconds = ackTimeoutInSeconds;
+
+            _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, _subscriptionSettingsModel);
             _subscriptionId = subscriptionId;
+
+            return this;
+        }
+
+        public IFluentQueueApi WithRetryPolicy(int maximumDeliveryAttempts = 5, int minimumBackOffInSeconds = 10, int maximumBackOffInSeconds = 600)
+        {
+            _subscriptionSettingsModel.SetRetrySettings(maximumDeliveryAttempts, minimumBackOffInSeconds, maximumBackOffInSeconds);
 
             return this;
         }

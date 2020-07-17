@@ -3,6 +3,7 @@ using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
 using System.Threading;
+using Blaise.Nuget.PubSub.Core.Models;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
@@ -11,7 +12,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
-        private int _messageTimeoutInSeconds;
+        private int _ackTimeoutInSeconds;
+        private SubscriptionSettingsModel _settingsModel;
 
         private TestMessageHandler _messageHandler;
         private TopicService _topicService;
@@ -32,16 +34,17 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-            _messageTimeoutInSeconds = 60;
+            _ackTimeoutInSeconds = 60;
+            _settingsModel = new SubscriptionSettingsModel {AckTimeoutInSeconds = _ackTimeoutInSeconds};
 
             _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService();
+            _subscriptionService = new SubscriptionService(new DeadLetterService(_topicService));
             _publisherService = new PublisherService();
             _messageHelper = new MessageHelper();
 
             _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
 
             _sut = new SubscriberService(); 
         }
@@ -82,7 +85,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
         [Test]
         public void
-            Given_A_Message_cannot_Be_Processed_When_I_Call_StartConsuming_Then_The_Message_Remains_on_The_Subscription()
+            Given_A_Message_Cannot_Be_Processed_When_I_Call_StartConsuming_Then_The_Message_Remains_on_The_Subscription()
         {
             //arrange
             var message = $"Hello, world {Guid.NewGuid()}";

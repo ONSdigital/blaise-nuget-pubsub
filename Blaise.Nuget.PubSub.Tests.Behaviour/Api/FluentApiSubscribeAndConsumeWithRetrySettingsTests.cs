@@ -1,19 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Blaise.Nuget.PubSub.Api;
+using Blaise.Nuget.PubSub.Core.Models;
 using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 {
-    public class FluentApiCreateSubscriptionAndConsumeTests
+    public class FluentApiSubscribeAndConsumeWithRetrySettingsTests
     {
-        private int _messageTimeoutInSeconds;
+        private int _ackTimeoutInSeconds;
 
         private string _projectId;
         private string _topicId;
@@ -25,7 +22,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 
         private FluentQueueApi _sut;
 
-        public FluentApiCreateSubscriptionAndConsumeTests()
+        public FluentApiSubscribeAndConsumeWithRetrySettingsTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
@@ -35,14 +32,16 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         {
             _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService();
+            _subscriptionService = new SubscriptionService(new DeadLetterService(_topicService));
 
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-            _messageTimeoutInSeconds = 60;
+            _ackTimeoutInSeconds = 60;
+            var connectionSettings = new SubscriptionSettingsModel { AckTimeoutInSeconds = _ackTimeoutInSeconds };
 
             _topicService.CreateTopic(_projectId, _topicId);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, connectionSettings);
 
             _sut = new FluentQueueApi();
         }

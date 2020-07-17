@@ -1,23 +1,27 @@
 ﻿using Blaise.Nuget.PubSub.Core.Interfaces;
 using Google.Api.Gax.ResourceNames;
 using Google.Cloud.PubSub.V1;
-using System;
 using System.Linq;
+using Blaise.Nuget.PubSub.Core.Models;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Blaise.Nuget.PubSub.Core.Services
 {
     public class SubscriptionService : ISubscriptionService
     {
+        private readonly IDeadLetterService _deadLetterService;
+
         private SubscriberServiceApiClient _subscriberServiceClient;
 
-        public Subscription CreateSubscription(string projectId, string topicId, string subscriptionId, int messageTimeoutInSeconds)
+        public SubscriptionService(IDeadLetterService deadLetterService)
+        {
+            _deadLetterService = deadLetterService;
+        }
+
+        public Subscription CreateSubscription(string projectId, string topicId, string subscriptionId,
+            SubscriptionSettingsModel settingsModel)
         {
             var client = GetSubscriberClient();
-
-            if (messageTimeoutInSeconds < 10 || messageTimeoutInSeconds > 600)
-            {
-                throw new ArgumentOutOfRangeException("The deadline for acking messages must be between '1' and '600'");
-            }
 
             if (SubscriptionExists(projectId, subscriptionId))
             {
@@ -26,7 +30,14 @@ namespace Blaise.Nuget.PubSub.Core.Services
 
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
             var topicName = new TopicName(projectId, topicId);
-            return client.CreateSubscription(subscriptionName, topicName, pushConfig: null, ackDeadlineSeconds: messageTimeoutInSeconds);
+            var subscription = client.CreateSubscription(subscriptionName, topicName, null, settingsModel.AckTimeoutInSeconds);
+
+            if (settingsModel.RetrySettings != null)
+            {
+                AddRetrySettingsToSubscription(subscription, projectId, topicId, settingsModel);
+            }
+
+            return subscription;
         }
 
         public void DeleteSubscription(string projectId, string subscriptionId)
@@ -62,6 +73,19 @@ namespace Blaise.Nuget.PubSub.Core.Services
         private SubscriberServiceApiClient GetSubscriberClient()
         {
             return _subscriberServiceClient ?? (_subscriberServiceClient = SubscriberServiceApiClient.Create());
+        }
+
+        private void AddRetrySettingsToSubscription(Subscription subscription, string projectId, string topicId,
+            SubscriptionSettingsModel settingsModel)
+        {
+            subscription.RetryPolicy = new RetryPolicy
+            {
+                MinimumBackoff = new Duration { Seconds = settingsModel.RetrySettings.MinimumBackOffInSeconds },
+                MaximumBackoff = new Duration { Seconds = settingsModel.RetrySettings.MaximumBackOffInSeconds }
+            };
+
+            subscription.DeadLetterPolicy = _deadLetterService.CreateDeadLetterPolicy(projectId, topicId,
+                settingsModel.RetrySettings.MaximumDeliveryAttempts);
         }
     }
 }

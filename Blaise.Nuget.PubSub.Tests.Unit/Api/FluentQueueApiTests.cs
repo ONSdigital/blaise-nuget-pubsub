@@ -6,6 +6,7 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using Blaise.Nuget.PubSub.Core.Models;
 
 namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 {
@@ -252,18 +253,44 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var projectId = "Project123";
             var topicId = "Topic123";
             var subscriptionId = "Subscription123";
-            var messageTimeoutInSeconds = 60;
+            var ackTimeoutInSeconds = 60;
 
-            _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 0));
+            _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), 
+                It.IsAny<string>(), It.IsAny<SubscriptionSettingsModel>()));
 
             _sut.WithProject(projectId);
             _sut.WithTopic(topicId);
 
             //act
-            _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds);
+            _sut.CreateSubscription(subscriptionId, ackTimeoutInSeconds);
 
             //assert
-            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, messageTimeoutInSeconds));
+            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, 
+                It.IsAny<SubscriptionSettingsModel>()));
+        }
+
+        [TestCase(10)]
+        [TestCase(20)]
+        [TestCase(100)]
+        public void Given_A_TimeOut_Is_Provided_When_I_Call_CreateSubscription_Then_The_Correct_Time_Is_Used(int ackTimeOutInSeconds)
+        {
+            //arrange
+            var projectId = "Project123";
+            var topicId = "Topic123";
+            var subscriptionId = "Subscription123";
+
+            _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<SubscriptionSettingsModel>()));
+
+            _sut.WithProject(projectId);
+            _sut.WithTopic(topicId);
+
+            //act
+            _sut.CreateSubscription(subscriptionId, ackTimeOutInSeconds);
+
+            //assert
+            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId,
+                It.Is<SubscriptionSettingsModel>(s => s.AckTimeoutInSeconds == ackTimeOutInSeconds)));
         }
 
         [Test]
@@ -274,7 +301,8 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var topicId = "Topic123";
             var subscriptionId = "Subscription123";
 
-            _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 0));
+            _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), 
+                It.IsAny<string>(), It.IsAny<SubscriptionSettingsModel>()));
 
             _sut.WithProject(projectId);
             _sut.WithTopic(topicId);
@@ -283,7 +311,8 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.CreateSubscription(subscriptionId);
 
             //assert
-            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, 600));
+            _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId,
+                It.Is<SubscriptionSettingsModel>(s => s.AckTimeoutInSeconds == 600)));
         }
 
         [Test]
@@ -293,13 +322,13 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var projectId = "Project123";
             var topicId = "Topic123";
             var subscriptionId = "Subscription123";
-            var messageTimeoutInSeconds = 60;
+            var ackTimeoutInSeconds = 60;
 
             _sut.WithProject(projectId);
             _sut.WithTopic(topicId);
 
             //act
-            var result = _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds);
+            var result = _sut.CreateSubscription(subscriptionId, ackTimeoutInSeconds);
 
             //assert
             Assert.IsNotNull(result);
@@ -311,10 +340,10 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_An_Empty_SubscriptionId_When_I_Call_CreateSubscription_Then_An_ArgumentException_Is_Thrown()
         {
             //arrange 
-            var messageTimeoutInSeconds = 60;
+            var ackTimeoutInSeconds = 60;
 
             //act && assert
-            var exception = Assert.Throws<ArgumentException>(() => _sut.CreateSubscription(string.Empty, messageTimeoutInSeconds));
+            var exception = Assert.Throws<ArgumentException>(() => _sut.CreateSubscription(string.Empty, ackTimeoutInSeconds));
             Assert.AreEqual("A value for the argument 'subscriptionId' must be supplied", exception.Message);
         }
 
@@ -322,10 +351,10 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_A_Null_SubscriptionId_When_I_Call_CreateSubscription_Then_An_ArgumentNullException_Is_Thrown()
         {
             //arrange 
-            var messageTimeoutInSeconds = 60;
+            var ackTimeoutInSeconds = 60;
 
             //act && assert
-            var exception = Assert.Throws<ArgumentNullException>(() => _sut.CreateSubscription(null, messageTimeoutInSeconds));
+            var exception = Assert.Throws<ArgumentNullException>(() => _sut.CreateSubscription(null, ackTimeoutInSeconds));
             Assert.AreEqual("subscriptionId", exception.ParamName);
         }
 
@@ -335,12 +364,12 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             //arrange
             var topicId = "Topic123";
             var subscriptionId = "Subscription123";
-            var messageTimeoutInSeconds = 60;
+            var ackTimeoutInSeconds = 60;
 
             _sut.WithTopic(topicId);
 
             //act && assert
-            var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds));
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateSubscription(subscriptionId, ackTimeoutInSeconds));
             Assert.AreEqual("The 'WithProject' step needs to be called prior to this", exception.Message);
         }
 
@@ -350,12 +379,12 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             //arrange
             var projectId = "Project123";
             var subscriptionId = "Subscription123";
-            var messageTimeoutInSeconds = 60;
+            var ackTimeoutInSeconds = 60;
 
             _sut.WithProject(projectId);
 
             //act && assert
-            var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateSubscription(subscriptionId, messageTimeoutInSeconds));
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.CreateSubscription(subscriptionId, ackTimeoutInSeconds));
             Assert.AreEqual("The 'WithTopic' or 'CreateTopic' step needs to be called prior to this", exception.Message);
         }
 

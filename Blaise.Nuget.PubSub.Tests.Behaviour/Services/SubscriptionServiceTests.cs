@@ -2,6 +2,7 @@
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
+using Blaise.Nuget.PubSub.Core.Models;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
@@ -10,7 +11,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
-        private int _messageTimeoutInSeconds;
+        private int _ackTimeoutInSeconds;
+        private SubscriptionSettingsModel _settingsModel;
 
         private TopicService _topicService;
 
@@ -27,12 +29,13 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _projectId = "ons-blaise-dev";
             _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
             _subscriptionId = string.Empty;
-            _messageTimeoutInSeconds = 60;
+            _ackTimeoutInSeconds = 60;
+            _settingsModel = new SubscriptionSettingsModel { AckTimeoutInSeconds = _ackTimeoutInSeconds };
 
             _topicService = new TopicService();
             _topicService.CreateTopic(_projectId, _topicId);
 
-            _sut = new SubscriptionService();
+            _sut = new SubscriptionService(new DeadLetterService(_topicService));
         }
 
         [TearDown]
@@ -66,7 +69,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         {
             //arrange
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
 
             //act
             var result = _sut.SubscriptionExists(_projectId, _subscriptionId);
@@ -85,7 +88,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             Assert.IsFalse(_sut.SubscriptionExists(_projectId, _subscriptionId));
 
             //act
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
 
             //assert
             Assert.IsTrue(_sut.SubscriptionExists(_projectId, _subscriptionId));
@@ -97,37 +100,24 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //arrange
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
 
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
             Assert.IsTrue(_sut.SubscriptionExists(_projectId, _subscriptionId));
 
             //act && assert
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
         }
 
         [TestCase(10)]
         [TestCase(60)]
         [TestCase(600)]
-        public void Given_ValidMessageTimeoutInSeconds_When_I_Call_CreateSubscription_Then_An_ArgumentOutOfRangeException_Is_Not_Thrown(int messageTimeoutInSeconds)
+        public void Given_Valid_AckTimeoutInSeconds_When_I_Call_CreateSubscription_Then_An_ArgumentOutOfRangeException_Is_Not_Thrown(int ackTimeoutInSeconds)
         {
             //arrange
+            _settingsModel.AckTimeoutInSeconds = ackTimeoutInSeconds;
             _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
 
             //act && assert
-            Assert.DoesNotThrow(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, messageTimeoutInSeconds));
-        }
-
-        [TestCase(-1)]
-        [TestCase(0)]
-        [TestCase(9)]
-        [TestCase(601)]
-        public void Given_InvalidMessageTimeoutInSeconds_When_I_Call_CreateSubscription_Then_An_ArgumentOutOfRangeException_Is_Thrown(int messageTimeoutInSeconds)
-        {
-            //arrange
-            _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-
-            //act && assert
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, messageTimeoutInSeconds));
-            Assert.AreEqual("The deadline for acking messages must be between '1' and '600'", exception.ParamName);
+            Assert.DoesNotThrow(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel));
         }
 
         [Test]
@@ -136,7 +126,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //arrange
             var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
 
-            _sut.CreateSubscription(_projectId, _topicId, subscriptionId, _messageTimeoutInSeconds);
+            _sut.CreateSubscription(_projectId, _topicId, subscriptionId, _settingsModel);
             Assert.IsTrue(_sut.SubscriptionExists(_projectId, subscriptionId));
 
             //act
