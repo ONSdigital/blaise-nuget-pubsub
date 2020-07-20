@@ -23,19 +23,28 @@ namespace Blaise.Nuget.PubSub.Core.Services
         public Subscription CreateSubscriptionWithDeadLetter(string projectId, string topicId, string subscriptionId,
             SubscriptionSettingsModel settingsModel)
         {
+            //create subscription
             var subscription = _subscriptionService.CreateSubscription(projectId, topicId, subscriptionId, settingsModel.AckTimeoutInSeconds);
-            GrantSubscriberPermissionsForSubscription(subscription);
 
-            var deadletterTopic = CreateDeadLetterTopic(projectId, topicId, subscriptionId, settingsModel);
+            //create deadletter topic and subscription
+            var deadletterTopic = CreateDeadLetterTopicAndSubscription(projectId, topicId, subscriptionId, settingsModel);
+            
+            //grant permissions for the deadletter topic and subscription
+            GrantSubscriberPermissionsForSubscription(subscription);
             GrantPublishPermissionsForTopic(deadletterTopic);
+
+            //add the exponential back off policy to the subscription
             AddRetrySettingsToSubscription(subscription, settingsModel.RetrySettings.MinimumBackOffInSeconds, 
                 settingsModel.RetrySettings.MaximumBackOffInSeconds);
+
+            //add the deadletter policy to the subscription
             AddDeadLetterPolicyToSubscription(subscription, deadletterTopic, settingsModel.RetrySettings.MaximumDeliveryAttempts);
 
+            //update the original subscription with the retry and deadletter changes
             return UpdateSubscription(subscription);
         }
 
-        private Topic CreateDeadLetterTopic(string projectId, string topicId, string subscriptionId, SubscriptionSettingsModel settingsModel)
+        private Topic CreateDeadLetterTopicAndSubscription(string projectId, string topicId, string subscriptionId, SubscriptionSettingsModel settingsModel)
         {
             //create dead letter topic
             var deadletterTopicId = $"{topicId}-deadletter";
