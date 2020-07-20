@@ -105,7 +105,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
                     {
                         new Binding {
                             Role = "roles/pubsub.subscriber",
-                            Members = { "serviceAccount:service-900159567912@gcp-sa-pubsub.iam.gserviceaccount.com" } }
+                            Members = { "serviceAccount:" } }
                     }
                 }
             };
@@ -126,7 +126,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
                     {
                         new Binding {
                             Role = "roles/pubsub.publisher",
-                            Members = { "serviceAccount:service-900159567912@gcp-sa-pubsub.iam.gserviceaccount.com" } }
+                            Members = { "serviceAccount:" } }
                     }
                 }
             };
