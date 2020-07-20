@@ -1,4 +1,5 @@
-﻿using Blaise.Nuget.PubSub.Core.Interfaces;
+﻿using System.Collections.Generic;
+using Blaise.Nuget.PubSub.Core.Interfaces;
 using Google.Api.Gax.ResourceNames;
 using Google.Cloud.PubSub.V1;
 using System.Linq;
@@ -35,6 +36,12 @@ namespace Blaise.Nuget.PubSub.Core.Services
             if (settingsModel.RetrySettings != null)
             {
                 AddRetrySettingsToSubscription(subscription, projectId, topicId, settingsModel);
+
+                client.UpdateSubscription(new UpdateSubscriptionRequest
+                {
+                    Subscription = subscription,
+                    UpdateMask = new FieldMask()
+                });
             }
 
             return subscription;
