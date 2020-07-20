@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using Blaise.Nuget.PubSub.Api;
-using Blaise.Nuget.PubSub.Core.Models;
 using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
@@ -24,7 +23,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 
         public FluentApiStopConsumingTests()
         {
- AuthorizationHelper.SetupGoogleAuthCredentials();
+            AuthorizationHelper.SetupGoogleAuthCredentials();
         }
 
         [SetUp]
@@ -32,7 +31,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         {
             _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService(new DeadLetterService(_topicService));
+            _subscriptionService = new SubscriptionService();
 
             var configurationHelper = new ConfigurationHelper();
             _projectId = configurationHelper.ProjectId;
@@ -40,10 +39,9 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
 
             _ackTimeoutInSeconds = 60;
-            var connectionSettings = new SubscriptionSettingsModel { AckTimeoutInSeconds = _ackTimeoutInSeconds };
 
             _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, connectionSettings);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
 
             _sut = new FluentQueueApi();
         }
@@ -55,7 +53,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _topicService.DeleteTopic(_projectId, _topicId);
         }
 
-      
+
 
         [Test]
         public void Given_Subscribe_To_One_Message_When_I_Call_StopConsuming_Using_FluentApi_Then_Subsequent_Messages_Are_Not_Handled()

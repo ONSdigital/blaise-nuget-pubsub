@@ -6,7 +6,6 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using Blaise.Nuget.PubSub.Core.Models;
 
 namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 {
@@ -16,6 +15,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         private Mock<ISubscriptionService> _subscriptionServiceMock;
         private Mock<ITopicService> _topicServiceMock;
         private Mock<ISubscriberService> _subscriberServiceMock;
+        private Mock<IDeadLetterSubscriptionService> _deadLetterSubscriptionServiceMock;
 
         private IFluentQueueApi _sut;
 
@@ -26,12 +26,14 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _subscriptionServiceMock = new Mock<ISubscriptionService>();
             _topicServiceMock = new Mock<ITopicService>();
             _subscriberServiceMock = new Mock<ISubscriberService>();
+            _deadLetterSubscriptionServiceMock = new Mock<IDeadLetterSubscriptionService>();
 
             _sut = new FluentQueueApi(
                 _publisherServiceMock.Object,
                 _subscriptionServiceMock.Object,
                 _topicServiceMock.Object,
-                _subscriberServiceMock.Object);
+                _subscriberServiceMock.Object,
+                _deadLetterSubscriptionServiceMock.Object);
         }
 
         [Test]
@@ -256,7 +258,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var ackTimeoutInSeconds = 60;
 
             _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), 
-                It.IsAny<string>(), It.IsAny<SubscriptionSettingsModel>()));
+                It.IsAny<string>(), It.IsAny<int>()));
 
             _sut.WithProject(projectId);
             _sut.WithTopic(topicId);
@@ -266,7 +268,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             //assert
             _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId, 
-                It.IsAny<SubscriptionSettingsModel>()));
+                It.IsAny<int>()));
         }
 
         [TestCase(10)]
@@ -280,7 +282,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var subscriptionId = "Subscription123";
 
             _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(),
-                It.IsAny<string>(), It.IsAny<SubscriptionSettingsModel>()));
+                It.IsAny<string>(), It.IsAny<int>()));
 
             _sut.WithProject(projectId);
             _sut.WithTopic(topicId);
@@ -290,7 +292,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             //assert
             _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId,
-                It.Is<SubscriptionSettingsModel>(s => s.AckTimeoutInSeconds == ackTimeOutInSeconds)));
+                ackTimeOutInSeconds));
         }
 
         [Test]
@@ -302,7 +304,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             var subscriptionId = "Subscription123";
 
             _subscriptionServiceMock.Setup(p => p.CreateSubscription(It.IsAny<string>(), It.IsAny<string>(), 
-                It.IsAny<string>(), It.IsAny<SubscriptionSettingsModel>()));
+                It.IsAny<string>(), It.IsAny<int>()));
 
             _sut.WithProject(projectId);
             _sut.WithTopic(topicId);
@@ -312,7 +314,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
             //assert
             _subscriptionServiceMock.Verify(v => v.CreateSubscription(projectId, topicId, subscriptionId,
-                It.Is<SubscriptionSettingsModel>(s => s.AckTimeoutInSeconds == 600)));
+                600));
         }
 
         [Test]

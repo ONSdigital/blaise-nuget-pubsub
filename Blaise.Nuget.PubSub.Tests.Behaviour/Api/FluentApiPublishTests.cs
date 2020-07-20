@@ -1,6 +1,5 @@
 ﻿using System;
 using Blaise.Nuget.PubSub.Api;
-using Blaise.Nuget.PubSub.Core.Models;
 using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
@@ -13,7 +12,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         private string _topicId;
         private string _subscriptionId;
         private int _ackTimeoutInSeconds;
-        private SubscriptionSettingsModel _settingsModel;
 
         private MessageHelper _messageHelper;
         private TopicService _topicService;
@@ -31,7 +29,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         {
             _messageHelper = new MessageHelper();
             _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService(new DeadLetterService(_topicService));
+            _subscriptionService = new SubscriptionService();
             
             var configurationHelper = new ConfigurationHelper();
             _projectId = configurationHelper.ProjectId;
@@ -40,7 +38,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             
             _ackTimeoutInSeconds = 60;
 
-            _settingsModel = new SubscriptionSettingsModel { AckTimeoutInSeconds = _ackTimeoutInSeconds };
             _sut = new FluentQueueApi();
         }
 
@@ -58,7 +55,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             var message = $"Hello, world {Guid.NewGuid()}";
 
             _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
 
             //act
             _sut

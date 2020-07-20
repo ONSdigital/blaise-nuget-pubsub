@@ -152,8 +152,8 @@
     <Compile Include="Models\RetrySettingsModel.cs" />
     <Compile Include="Models\SubscriptionSettingsModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\DeadLetterService.cs" />
-    <Compile Include="Interfaces\IDeadLetterService.cs" />
+    <Compile Include="Services\DeadLetterSubscriptionService.cs" />
+    <Compile Include="Interfaces\IDeadLetterSubscriptionService.cs" />
     <Compile Include="Services\PublisherService.cs" />
     <Compile Include="Services\SubscriberService.cs" />
     <Compile Include="Services\SubscriptionService.cs" />

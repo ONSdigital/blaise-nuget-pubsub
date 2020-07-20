@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 {
-    public class FluentApiSubscribeAndConsumeWithRetrySettingsTests
+    public class FluentApiSubscribeAndConsumeWithDeadLetterTests
     {
         private string _projectId;
         private string _topicId;
@@ -19,7 +19,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         
         private FluentQueueApi _sut;
 
-        public FluentApiSubscribeAndConsumeWithRetrySettingsTests()
+        public FluentApiSubscribeAndConsumeWithDeadLetterTests()
         {
             AuthorizationHelper.SetupGoogleAuthCredentials();
         }
@@ -29,7 +29,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         {
             _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService(new DeadLetterService(_topicService));
+            _subscriptionService = new SubscriptionService();
 
             var configurationHelper = new ConfigurationHelper();
             _projectId = configurationHelper.ProjectId;
@@ -44,9 +44,17 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         [TearDown]
         public void TearDown()
         {
-            _sut.StopConsuming();
+            try
+            {
+                _sut.StopConsuming();
+            }
+            catch
+            {
+            }
+            
             _subscriptionService.DeleteSubscription(_projectId, _subscriptionId);
             _topicService.DeleteTopic(_projectId, _topicId);
+            _subscriptionService.DeleteSubscription(_projectId, $"{_subscriptionId}-deadletter");
             _topicService.DeleteTopic(_projectId, $"{_topicId}-deadletter");
         }
 
@@ -54,6 +62,10 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         public void Given_I_The_Message_Cannot_Be_Processed_When_I_Set_The_Retry_Policy_Then_It_Behaves_As_Expected()
         {
             //arrange
+            var maxAttempts = 5;
+            var minimumBackOff = 10;
+            var maximumBackOff = 10;
+
             var message1 = $"Hello, world {Guid.NewGuid()}";
             _messageHandler.SetResult(false);
 
@@ -61,18 +73,18 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _sut
                 .WithProject(_projectId)
                 .WithTopic(_topicId)
-                .WithRetryPolicy(5, 10,10)
+                .WithRetryPolicy(maxAttempts, minimumBackOff, maximumBackOff)
                 .CreateSubscription(_subscriptionId, 60)
                 .StartConsuming(_messageHandler, true);
 
             PublishMessage(message1);
 
-            Thread.Sleep(60000); // allow time for processing the messages off the queue
+            Thread.Sleep(120000); // allow time for processing the messages off the queue
 
             //assert
             Assert.IsNotNull(_messageHandler.MessagesHandled);
             Assert.AreEqual(0, _messageHandler.MessagesHandled.Count);
-            //Assert.AreEqual(5, _messageHandler.MessagesNotHandled.Count);
+            Assert.IsTrue(_messageHandler.MessagesNotHandled.Count == maxAttempts || _messageHandler.MessagesNotHandled.Count == maxAttempts + 1);
             Assert.IsTrue(_messageHandler.MessagesNotHandled.Contains(message1));
         }
 

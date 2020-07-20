@@ -116,7 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\FluentApiStopSubscribingTests.cs" />
-    <Compile Include="Api\FluentApiSubscribeAndConsumeWithRetrySettingsTests.cs" />
+    <Compile Include="Api\FluentApiSubscribeAndConsumeWithDeadLetterTests.cs" />
     <Compile Include="Api\FluentApiSubscribeAndConsumeTests.cs" />
     <Compile Include="Api\FluentApiPublishTests.cs" />
     <Compile Include="Helpers\AuthorizationHelper.cs" />

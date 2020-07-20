@@ -16,6 +16,7 @@ namespace Blaise.Nuget.PubSub.Api
         private readonly ISubscriptionService _subscriptionService;
         private readonly ITopicService _topicService;
         private readonly ISubscriberService _subscriberService;
+        private readonly IDeadLetterSubscriptionService _deadLetterSubscriptionService;
 
         private string _projectId;
         private string _topicId;
@@ -28,12 +29,14 @@ namespace Blaise.Nuget.PubSub.Api
             IPublisherService publisherService,
             ISubscriptionService subscriptionService,
             ITopicService topicService,
-            ISubscriberService subscriberService)
+            ISubscriberService subscriberService,
+            IDeadLetterSubscriptionService deadLetterSubscriptionService)
         {
             _publisherService = publisherService;
             _subscriptionService = subscriptionService;
             _topicService = topicService;
             _subscriberService = subscriberService;
+            _deadLetterSubscriptionService = deadLetterSubscriptionService;
 
             _subscriptionSettingsModel = new SubscriptionSettingsModel();
         }
@@ -45,12 +48,13 @@ namespace Blaise.Nuget.PubSub.Api
             unityContainer.RegisterType<ISubscriptionService, SubscriptionService>();
             unityContainer.RegisterType<ITopicService, TopicService>();
             unityContainer.RegisterSingleton<ISubscriberService, SubscriberService>();
-            unityContainer.RegisterSingleton<IDeadLetterService, DeadLetterService>();
+            unityContainer.RegisterSingleton<IDeadLetterSubscriptionService, DeadLetterSubscriptionService>();
 
             _publisherService = unityContainer.Resolve<IPublisherService>();
             _subscriptionService = unityContainer.Resolve<ISubscriptionService>();
             _topicService = unityContainer.Resolve<ITopicService>();
             _subscriberService = unityContainer.Resolve<ISubscriberService>();
+            _deadLetterSubscriptionService = unityContainer.Resolve<IDeadLetterSubscriptionService>();
 
             _subscriptionSettingsModel = new SubscriptionSettingsModel();
         }
@@ -82,9 +86,17 @@ namespace Blaise.Nuget.PubSub.Api
             ValidateProjectIdIsSet();
             ValidateTopicIdIsSet();
 
-            _subscriptionSettingsModel.AckTimeoutInSeconds = ackTimeoutInSeconds;
+            if (_subscriptionSettingsModel.RetrySettings == null)
+            {
+                _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, ackTimeoutInSeconds);
+            }
+            else
+            {
+                _subscriptionSettingsModel.AckTimeoutInSeconds = ackTimeoutInSeconds;
+                _deadLetterSubscriptionService.CreateSubscriptionWithDeadLetter(_projectId, _topicId, subscriptionId,
+                    _subscriptionSettingsModel);
+            }
 
-            _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, _subscriptionSettingsModel);
             _subscriptionId = subscriptionId;
 
             return this;

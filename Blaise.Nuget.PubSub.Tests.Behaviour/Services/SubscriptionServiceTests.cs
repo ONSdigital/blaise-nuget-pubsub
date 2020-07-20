@@ -2,7 +2,6 @@
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
-using Blaise.Nuget.PubSub.Core.Models;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
@@ -12,7 +11,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _topicId;
         private string _subscriptionId;
         private int _ackTimeoutInSeconds;
-        private SubscriptionSettingsModel _settingsModel;
 
         private TopicService _topicService;
 
@@ -32,12 +30,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
            
             _subscriptionId = string.Empty;
             _ackTimeoutInSeconds = 60;
-            _settingsModel = new SubscriptionSettingsModel { AckTimeoutInSeconds = _ackTimeoutInSeconds };
 
             _topicService = new TopicService();
             _topicService.CreateTopic(_projectId, _topicId);
 
-            _sut = new SubscriptionService(new DeadLetterService(_topicService));
+            _sut = new SubscriptionService();
         }
 
         [TearDown]
@@ -73,7 +70,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             //arrange
             var configurationHelper = new ConfigurationHelper();
             _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
 
             //act
             var result = _sut.SubscriptionExists(_projectId, _subscriptionId);
@@ -93,7 +90,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             Assert.IsFalse(_sut.SubscriptionExists(_projectId, _subscriptionId));
 
             //act
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
 
             //assert
             Assert.IsTrue(_sut.SubscriptionExists(_projectId, _subscriptionId));
@@ -106,11 +103,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             var configurationHelper = new ConfigurationHelper();
             _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
 
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
             Assert.IsTrue(_sut.SubscriptionExists(_projectId, _subscriptionId));
 
             //act && assert
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
         }
 
         [TestCase(10)]
@@ -119,12 +116,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Given_Valid_AckTimeoutInSeconds_When_I_Call_CreateSubscription_Then_An_ArgumentOutOfRangeException_Is_Not_Thrown(int ackTimeoutInSeconds)
         {
             //arrange
-            _settingsModel.AckTimeoutInSeconds = ackTimeoutInSeconds;
             var configurationHelper = new ConfigurationHelper();
             _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
 
             //act && assert
-            Assert.DoesNotThrow(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel));
+            Assert.DoesNotThrow(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, ackTimeoutInSeconds));
         }
 
         [Test]
@@ -134,7 +130,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             var configurationHelper = new ConfigurationHelper();
             var subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
 
-            _sut.CreateSubscription(_projectId, _topicId, subscriptionId, _settingsModel);
+            _sut.CreateSubscription(_projectId, _topicId, subscriptionId, _ackTimeoutInSeconds);
             Assert.IsTrue(_sut.SubscriptionExists(_projectId, subscriptionId));
 
             //act

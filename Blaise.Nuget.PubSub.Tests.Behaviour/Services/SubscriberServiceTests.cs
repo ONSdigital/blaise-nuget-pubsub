@@ -3,7 +3,6 @@ using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
 using System;
 using System.Threading;
-using Blaise.Nuget.PubSub.Core.Models;
 
 namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 {
@@ -13,7 +12,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _topicId;
         private string _subscriptionId;
         private int _ackTimeoutInSeconds;
-        private SubscriptionSettingsModel _settingsModel;
 
         private TestMessageHandler _messageHandler;
         private TopicService _topicService;
@@ -37,16 +35,15 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
 
             _ackTimeoutInSeconds = 60;
-            _settingsModel = new SubscriptionSettingsModel {AckTimeoutInSeconds = _ackTimeoutInSeconds};
 
             _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
-            _subscriptionService = new SubscriptionService(new DeadLetterService(_topicService));
+            _subscriptionService = new SubscriptionService();
             _publisherService = new PublisherService();
             _messageHelper = new MessageHelper();
 
             _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _settingsModel);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
 
             _sut = new SubscriberService(); 
         }
