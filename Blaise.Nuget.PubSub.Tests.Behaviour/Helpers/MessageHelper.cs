@@ -1,6 +1,4 @@
-﻿
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Google.Cloud.PubSub.V1;
 using System.Linq;
 

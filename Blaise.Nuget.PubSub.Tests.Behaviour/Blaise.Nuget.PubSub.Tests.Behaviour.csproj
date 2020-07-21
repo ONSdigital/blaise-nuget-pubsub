@@ -127,9 +127,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MultipleSubscriptions\PublishToSingleTopicWithMultipleSubscriptionsTests.cs" />
     <Compile Include="MultipleSubscriptions\MultipleSubscriberToASingleTopicTests.cs" />
+    <Compile Include="Services\SubscriptionServiceTests.cs" />
     <Compile Include="Services\SubscriberServiceTests.cs" />
     <Compile Include="Services\TopicServiceTests.cs" />
-    <Compile Include="Services\SubscriptionServiceTests.cs" />
+    <Compile Include="Services\DeadLetterSubscriptionServiceTests.cs" />
     <Compile Include="Services\PublisherServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>

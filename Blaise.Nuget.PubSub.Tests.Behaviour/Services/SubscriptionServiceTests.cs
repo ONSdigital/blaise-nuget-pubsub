@@ -110,19 +110,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
         }
 
-        [TestCase(10)]
-        [TestCase(60)]
-        [TestCase(600)]
-        public void Given_Valid_AckTimeoutInSeconds_When_I_Call_CreateSubscription_Then_An_ArgumentOutOfRangeException_Is_Not_Thrown(int ackTimeoutInSeconds)
-        {
-            //arrange
-            var configurationHelper = new ConfigurationHelper();
-            _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
-
-            //act && assert
-            Assert.DoesNotThrow(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, ackTimeoutInSeconds));
-        }
-
         [Test]
         public void Given_A_Subscription_Exists_When_I_Call_DeleteSubscription_The_Subscription_Is_Deleted()
         {

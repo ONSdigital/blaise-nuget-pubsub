@@ -67,7 +67,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         }
 
         [Test]
-        public void Given_A_Message_With_Attributes_When_I_Call_PublishMessage_Then_The_Message_With_Atrributes_Is_Published()
+        public void Given_A_Message_With_Attributes_When_I_Call_PublishMessage_Then_The_Message_With_Attributes_Is_Published()
         {
             //arrange
             var message = $"Hello, world {Guid.NewGuid()}";
