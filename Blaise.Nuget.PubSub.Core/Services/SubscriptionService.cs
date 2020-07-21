@@ -1,7 +1,9 @@
-﻿using Blaise.Nuget.PubSub.Core.Interfaces;
+﻿using System.Collections.Generic;
+using Blaise.Nuget.PubSub.Core.Interfaces;
 using Google.Api.Gax.ResourceNames;
 using Google.Cloud.PubSub.V1;
 using System.Linq;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Blaise.Nuget.PubSub.Core.Services
 {
@@ -54,6 +56,21 @@ namespace Blaise.Nuget.PubSub.Core.Services
             var subscriptions = client.ListSubscriptions(projectName);
 
             return subscriptions.Any(s => s.SubscriptionName.SubscriptionId == subscriptionId);
+        }
+
+        public Subscription UpdateSubscription(Subscription subscription, int fieldMaskNumber)
+        {
+            var subscriberServiceClient = SubscriberServiceApiClient.Create();
+
+            return subscriberServiceClient.UpdateSubscription(
+                new UpdateSubscriptionRequest
+                {
+                    Subscription = subscription,
+                    UpdateMask = FieldMask.FromFieldNumbers<Subscription>(new List<int>
+                    {
+                        fieldMaskNumber
+                    })
+                });
         }
 
         private SubscriberServiceApiClient GetSubscriberClient()

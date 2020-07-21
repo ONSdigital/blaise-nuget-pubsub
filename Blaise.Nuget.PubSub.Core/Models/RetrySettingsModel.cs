@@ -25,7 +25,7 @@ namespace Blaise.Nuget.PubSub.Core.Models
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    throw new ArgumentException(nameof(ServiceAccountName), $"You must provide a valid service account name");
+                    throw new ArgumentException(nameof(ServiceAccountName), $"ServiceAccountName");
                 }
 
                 _serviceAccountName = value;
@@ -65,9 +65,9 @@ namespace Blaise.Nuget.PubSub.Core.Models
             get => _maximumDeliveryAttempts;
             private set
             {
-                if (value < 1 || value > 10)
+                if (value < 1 || value > 100)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(MaximumDeliveryAttempts), "The range for the maximum number of delivery attempts is between '1' and '10'");
+                    throw new ArgumentOutOfRangeException(nameof(MaximumDeliveryAttempts), "The range for the maximum number of delivery attempts is between '1' and '100'");
                 }
 
                 _maximumDeliveryAttempts = value;

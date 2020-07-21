@@ -116,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\FluentApiStopSubscribingTests.cs" />
+    <Compile Include="Api\FluentApiSingleDeadLetterTests.cs" />
     <Compile Include="Api\FluentApiSubscribeAndConsumeWithDeadLetterTests.cs" />
     <Compile Include="Api\FluentApiSubscribeAndConsumeTests.cs" />
     <Compile Include="Api\FluentApiPublishTests.cs" />
@@ -130,7 +131,6 @@
     <Compile Include="Services\SubscriptionServiceTests.cs" />
     <Compile Include="Services\SubscriberServiceTests.cs" />
     <Compile Include="Services\TopicServiceTests.cs" />
-    <Compile Include="Services\DeadLetterSubscriptionServiceTests.cs" />
     <Compile Include="Services\PublisherServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>

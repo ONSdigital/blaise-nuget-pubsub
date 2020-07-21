@@ -5,7 +5,7 @@ using Blaise.Nuget.PubSub.Core.Interfaces;
 using Blaise.Nuget.PubSub.Core.Services;
 using System;
 using System.Collections.Generic;
-using Blaise.Nuget.PubSub.Core.Models;
+using Blaise.Nuget.PubSub.Contracts.Enums;
 using Unity;
 
 namespace Blaise.Nuget.PubSub.Api
@@ -16,13 +16,13 @@ namespace Blaise.Nuget.PubSub.Api
         private readonly ISubscriptionService _subscriptionService;
         private readonly ITopicService _topicService;
         private readonly ISubscriberService _subscriberService;
-        private readonly IDeadLetterSubscriptionService _deadLetterSubscriptionService;
+        private readonly IDeadLetterService _deadLetterService;
+        private readonly IExponentialBackOffService _exponentialBackOffService;
+        private readonly IIamPolicyRequestService _iamPolicyRequestService;
 
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
-
-        private RetrySettingsModel _retrySettingsModel;
 
         //This constructor is needed for unit testing but should not be visible from services that ingest the package
         internal FluentQueueApi(
@@ -30,13 +30,17 @@ namespace Blaise.Nuget.PubSub.Api
             ISubscriptionService subscriptionService,
             ITopicService topicService,
             ISubscriberService subscriberService,
-            IDeadLetterSubscriptionService deadLetterSubscriptionService)
+            IDeadLetterService deadLetterService,
+            IExponentialBackOffService exponentialBackOffService,
+            IIamPolicyRequestService iamPolicyRequestService)
         {
             _publisherService = publisherService;
             _subscriptionService = subscriptionService;
             _topicService = topicService;
             _subscriberService = subscriberService;
-            _deadLetterSubscriptionService = deadLetterSubscriptionService;
+            _deadLetterService = deadLetterService;
+            _exponentialBackOffService = exponentialBackOffService;
+            _iamPolicyRequestService = iamPolicyRequestService;
         }
 
         public FluentQueueApi()
@@ -46,13 +50,17 @@ namespace Blaise.Nuget.PubSub.Api
             unityContainer.RegisterType<ISubscriptionService, SubscriptionService>();
             unityContainer.RegisterType<ITopicService, TopicService>();
             unityContainer.RegisterSingleton<ISubscriberService, SubscriberService>();
-            unityContainer.RegisterSingleton<IDeadLetterSubscriptionService, DeadLetterSubscriptionService>();
+            unityContainer.RegisterSingleton<IDeadLetterService, DeadLetterService>();
+            unityContainer.RegisterSingleton<IExponentialBackOffService, ExponentialBackOffService>();
+            unityContainer.RegisterSingleton<IIamPolicyRequestService, IamPolicyRequestService>();
 
             _publisherService = unityContainer.Resolve<IPublisherService>();
             _subscriptionService = unityContainer.Resolve<ISubscriptionService>();
             _topicService = unityContainer.Resolve<ITopicService>();
             _subscriberService = unityContainer.Resolve<ISubscriberService>();
-            _deadLetterSubscriptionService = unityContainer.Resolve<IDeadLetterSubscriptionService>();
+            _deadLetterService = unityContainer.Resolve<IDeadLetterService>();
+            _exponentialBackOffService = unityContainer.Resolve<IExponentialBackOffService>();
+            _iamPolicyRequestService = unityContainer.Resolve<IIamPolicyRequestService>();
         }
 
         public IFluentQueueApi WithProject(string projectId)
@@ -80,29 +88,44 @@ namespace Blaise.Nuget.PubSub.Api
         {
             subscriptionId.ThrowExceptionIfNullOrEmpty("subscriptionId");
             ValidateAckTimeoutIsInRange(ackTimeoutInSeconds);
+
             ValidateProjectIdIsSet();
             ValidateTopicIdIsSet();
 
-            if (_retrySettingsModel == null)
-            {
-                _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, ackTimeoutInSeconds);
-            }
-            else
-            {
-                _deadLetterSubscriptionService.CreateSubscriptionWithDeadLetter(_projectId, _topicId, subscriptionId,
-                    ackTimeoutInSeconds, _retrySettingsModel);
-            }
-
+            _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, ackTimeoutInSeconds);
             _subscriptionId = subscriptionId;
 
             return this;
         }
 
-        public IFluentQueueApi WithRetryPolicy(string serviceAccountName, int maximumDeliveryAttempts = 5, 
-            int minimumBackOffInSeconds = 10, int maximumBackOffInSeconds = 600)
+        public IFluentQueueApi WithExponentialBackOff(int minimumBackOffInSeconds = 10, int maximumBackOffInSeconds = 600)
         {
-            _retrySettingsModel = new RetrySettingsModel(serviceAccountName, maximumDeliveryAttempts,
-                minimumBackOffInSeconds, maximumBackOffInSeconds);
+            ValidateMinimumBackOff(minimumBackOffInSeconds);
+            ValidateMaximumBackOff(maximumBackOffInSeconds);
+
+            ValidateProjectIdIsSet();
+            ValidateSubscriptionIdIsSet();
+
+            _exponentialBackOffService.UpdateSubscriptionWithExponentialBackOff(_projectId, _subscriptionId,
+                minimumBackOffInSeconds,
+                maximumBackOffInSeconds);
+
+            return this;
+        }
+
+        public IFluentQueueApi WithDeadLetter(string serviceAccountName, string deadLetterTopicId, int maximumDeliveryAttempts = 5)
+        {
+            serviceAccountName.ThrowExceptionIfNullOrEmpty("serviceAccountName");
+            deadLetterTopicId.ThrowExceptionIfNullOrEmpty("deadLetterTopicId");
+            ValidateMaximumDeliveryAttempts(maximumDeliveryAttempts);
+            
+            ValidateProjectIdIsSet();
+            ValidateSubscriptionIdIsSet();
+
+            var subscription = _deadLetterService.UpdateSubscriptionWithDeadLetter(_projectId, _subscriptionId, deadLetterTopicId,
+                maximumDeliveryAttempts);
+
+            _iamPolicyRequestService.GrantPermissionsForAccount(subscription.Name, serviceAccountName, IamRoleType.Subscriber);
 
             return this;
         }
@@ -126,7 +149,7 @@ namespace Blaise.Nuget.PubSub.Api
             _publisherService.PublishMessage(_projectId, _topicId, message, attributes);
         }
 
-        public IFluentSubscriptionApi WithSubscription(string subscriptionId)
+        public IFluentQueueApi WithSubscription(string subscriptionId)
         {
             subscriptionId.ThrowExceptionIfNullOrEmpty("subscriptionId");
 
@@ -179,6 +202,33 @@ namespace Blaise.Nuget.PubSub.Api
             if (ackTimeoutInSeconds < 10 || ackTimeoutInSeconds > 600)
             {
                 throw new ArgumentOutOfRangeException($"The deadline for acking messages must be between the values '1' and '600'");
+            }
+        }
+
+        private static void ValidateMinimumBackOff(int minimumBackOffInSeconds)
+        {
+            if (minimumBackOffInSeconds < 10 || minimumBackOffInSeconds > 600)
+            {
+                throw new ArgumentOutOfRangeException(nameof(minimumBackOffInSeconds), 
+                    "The range for the minimum back off between retries is between '10' and '600'");
+            }
+        }
+
+        private static void ValidateMaximumBackOff(int maximumBackOffInSeconds)
+        {
+            if (maximumBackOffInSeconds < 10 || maximumBackOffInSeconds > 600)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maximumBackOffInSeconds), 
+                    "The range for the minimum back off between retries is between '10' and '600'");
+            }
+        }
+
+        private void ValidateMaximumDeliveryAttempts(int maximumDeliveryAttempts)
+        {
+            if (maximumDeliveryAttempts < 5 || maximumDeliveryAttempts > 100)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maximumDeliveryAttempts), 
+                    "The range for the maximum number of delivery attempts is between '5' and '100'");
             }
         }
     }
