@@ -5,15 +5,31 @@ namespace Blaise.Nuget.PubSub.Core.Models
 {
     public class RetrySettingsModel
     {
+        private string _serviceAccountName;
         private int _maximumBackOffInSeconds;
         private int _minimumBackOffInSeconds;
         private int _maximumDeliveryAttempts;
 
-        public RetrySettingsModel(int maximumDeliveryAttempts, int minimumBackOffInSeconds, int maximumBackOffInSeconds)
+        public RetrySettingsModel(string serviceAccountName, int maximumDeliveryAttempts, int minimumBackOffInSeconds, int maximumBackOffInSeconds)
         {
+            ServiceAccountName = serviceAccountName;
             MaximumBackOffInSeconds = maximumBackOffInSeconds;
             MinimumBackOffInSeconds = minimumBackOffInSeconds;
             MaximumDeliveryAttempts = maximumDeliveryAttempts;
+        }
+
+        public string ServiceAccountName
+        {
+            get => _serviceAccountName;
+            private set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException(nameof(ServiceAccountName), $"You must provide a valid service account name");
+                }
+
+                _serviceAccountName = value;
+            }
         }
 
         public int MaximumBackOffInSeconds

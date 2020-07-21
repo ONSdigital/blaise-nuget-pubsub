@@ -124,7 +124,7 @@
   <ItemGroup>
     <Compile Include="Api\FluentQueueApiTests.cs" />
     <Compile Include="Helpers\TestMessageHandler.cs" />
-    <Compile Include="Models\SubscriptionSettingsModelTests.cs" />
+    <Compile Include="Models\RetrySettingsModelTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

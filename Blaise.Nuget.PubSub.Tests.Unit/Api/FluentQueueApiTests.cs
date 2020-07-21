@@ -360,6 +360,20 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             Assert.AreEqual("subscriptionId", exception.ParamName);
         }
 
+        [TestCase(-1)]
+        [TestCase(0)]
+        [TestCase(9)]
+        [TestCase(601)]
+        public void Given_An_Invalid_AckTimeoutInSeconds_Value_When_I_Call_CreateSubscription_Then_An_ArgumentOutOfRangeException_Is_Thrown(int ackTimeoutInSeconds)
+        {
+            //arrange 
+            var subscriptionId = "Subscription123";
+
+            //act && assert
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _sut.CreateSubscription(subscriptionId, ackTimeoutInSeconds));
+            Assert.AreEqual($"The deadline for acking messages must be between the values '1' and '600'", exception.ParamName);
+        }
+
         [Test]
         public void Given_ProjectId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_CreateSubscription_Then_A_NullReferenceExceptionIs_Thrown()
         {

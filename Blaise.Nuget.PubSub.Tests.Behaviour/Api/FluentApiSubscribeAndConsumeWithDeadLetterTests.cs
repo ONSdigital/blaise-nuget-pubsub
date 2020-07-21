@@ -12,11 +12,12 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
+        private string _serviceAccountName;
 
         private TestMessageHandler _messageHandler;
         private SubscriptionService _subscriptionService;
         private TopicService _topicService;
-        
+
         private FluentQueueApi _sut;
 
         public FluentApiSubscribeAndConsumeWithDeadLetterTests()
@@ -35,6 +36,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _projectId = configurationHelper.ProjectId;
             _topicId = $"{configurationHelper.TopicId}-{Guid.NewGuid()}";
             _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
+            _serviceAccountName = configurationHelper.ServiceAccountName;
 
             _topicService.CreateTopic(_projectId, _topicId);
 
@@ -44,14 +46,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         [TearDown]
         public void TearDown()
         {
-            try
-            {
-                _sut.StopConsuming();
-            }
-            catch
-            {
-            }
-            
+            _sut.StopConsuming();
+
             _subscriptionService.DeleteSubscription(_projectId, _subscriptionId);
             _topicService.DeleteTopic(_projectId, _topicId);
             _subscriptionService.DeleteSubscription(_projectId, $"{_subscriptionId}-deadletter");
@@ -62,9 +58,9 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         public void Given_I_The_Message_Cannot_Be_Processed_When_I_Set_The_Retry_Policy_Then_It_Behaves_As_Expected()
         {
             //arrange
-            var maxAttempts = 5;
-            var minimumBackOff = 10;
-            var maximumBackOff = 10;
+            const int maxAttempts = 5;
+            const int minimumBackOff = 10;
+            const int maximumBackOff = 10;
 
             var message1 = $"Hello, world {Guid.NewGuid()}";
             _messageHandler.SetResult(false);
@@ -73,7 +69,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _sut
                 .WithProject(_projectId)
                 .WithTopic(_topicId)
-                .WithRetryPolicy(maxAttempts, minimumBackOff, maximumBackOff)
+                .WithRetryPolicy(_serviceAccountName, maxAttempts, minimumBackOff, maximumBackOff)
                 .CreateSubscription(_subscriptionId, 60)
                 .StartConsuming(_messageHandler, true);
 

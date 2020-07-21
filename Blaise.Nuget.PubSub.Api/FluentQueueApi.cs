@@ -22,7 +22,7 @@ namespace Blaise.Nuget.PubSub.Api
         private string _topicId;
         private string _subscriptionId;
 
-        private readonly SubscriptionSettingsModel _subscriptionSettingsModel;
+        private RetrySettingsModel _retrySettingsModel;
 
         //This constructor is needed for unit testing but should not be visible from services that ingest the package
         internal FluentQueueApi(
@@ -37,8 +37,6 @@ namespace Blaise.Nuget.PubSub.Api
             _topicService = topicService;
             _subscriberService = subscriberService;
             _deadLetterSubscriptionService = deadLetterSubscriptionService;
-
-            _subscriptionSettingsModel = new SubscriptionSettingsModel();
         }
 
         public FluentQueueApi()
@@ -55,8 +53,6 @@ namespace Blaise.Nuget.PubSub.Api
             _topicService = unityContainer.Resolve<ITopicService>();
             _subscriberService = unityContainer.Resolve<ISubscriberService>();
             _deadLetterSubscriptionService = unityContainer.Resolve<IDeadLetterSubscriptionService>();
-
-            _subscriptionSettingsModel = new SubscriptionSettingsModel();
         }
 
         public IFluentQueueApi WithProject(string projectId)
@@ -83,18 +79,18 @@ namespace Blaise.Nuget.PubSub.Api
         public IFluentQueueApi CreateSubscription(string subscriptionId, int ackTimeoutInSeconds = 600)
         {
             subscriptionId.ThrowExceptionIfNullOrEmpty("subscriptionId");
+            ValidateAckTimeoutIsInRange(ackTimeoutInSeconds);
             ValidateProjectIdIsSet();
             ValidateTopicIdIsSet();
 
-            if (_subscriptionSettingsModel.RetrySettings == null)
+            if (_retrySettingsModel == null)
             {
                 _subscriptionService.CreateSubscription(_projectId, _topicId, subscriptionId, ackTimeoutInSeconds);
             }
             else
             {
-                _subscriptionSettingsModel.AckTimeoutInSeconds = ackTimeoutInSeconds;
                 _deadLetterSubscriptionService.CreateSubscriptionWithDeadLetter(_projectId, _topicId, subscriptionId,
-                    _subscriptionSettingsModel);
+                    ackTimeoutInSeconds, _retrySettingsModel);
             }
 
             _subscriptionId = subscriptionId;
@@ -102,9 +98,11 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
-        public IFluentQueueApi WithRetryPolicy(int maximumDeliveryAttempts = 5, int minimumBackOffInSeconds = 10, int maximumBackOffInSeconds = 600)
+        public IFluentQueueApi WithRetryPolicy(string serviceAccountName, int maximumDeliveryAttempts = 5, 
+            int minimumBackOffInSeconds = 10, int maximumBackOffInSeconds = 600)
         {
-            _subscriptionSettingsModel.SetRetrySettings(maximumDeliveryAttempts, minimumBackOffInSeconds, maximumBackOffInSeconds);
+            _retrySettingsModel = new RetrySettingsModel(serviceAccountName, maximumDeliveryAttempts,
+                minimumBackOffInSeconds, maximumBackOffInSeconds);
 
             return this;
         }
@@ -173,6 +171,14 @@ namespace Blaise.Nuget.PubSub.Api
             if (string.IsNullOrWhiteSpace(_subscriptionId))
             {
                 throw new NullReferenceException("The 'WithSubscription' or 'CreateSubscription' step needs to be called prior to this");
+            }
+        }
+
+        private static void ValidateAckTimeoutIsInRange(int ackTimeoutInSeconds)
+        {
+            if (ackTimeoutInSeconds < 10 || ackTimeoutInSeconds > 600)
+            {
+                throw new ArgumentOutOfRangeException($"The deadline for acking messages must be between the values '1' and '600'");
             }
         }
     }

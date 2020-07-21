@@ -21,30 +21,30 @@ namespace Blaise.Nuget.PubSub.Core.Services
         }
 
         public Subscription CreateSubscriptionWithDeadLetter(string projectId, string topicId, string subscriptionId,
-            SubscriptionSettingsModel settingsModel)
+            int ackTimeoutInSeconds, RetrySettingsModel settingsModel)
         {
             //create subscription
-            var subscription = _subscriptionService.CreateSubscription(projectId, topicId, subscriptionId, settingsModel.AckTimeoutInSeconds);
+            var subscription = _subscriptionService.CreateSubscription(projectId, topicId, subscriptionId, ackTimeoutInSeconds);
 
             //create deadletter topic and subscription
-            var deadletterTopic = CreateDeadLetterTopicAndSubscription(projectId, topicId, subscriptionId, settingsModel);
+            var deadletterTopic = CreateDeadLetterTopicAndSubscription(projectId, topicId, subscriptionId, ackTimeoutInSeconds);
             
             //grant permissions for the deadletter topic and subscription
-            GrantSubscriberPermissionsForSubscription(subscription);
-            GrantPublishPermissionsForTopic(deadletterTopic);
+            GrantSubscriberPermissionsForSubscription(subscription, settingsModel.ServiceAccountName);
+            GrantPublishPermissionsForTopic(deadletterTopic, settingsModel.ServiceAccountName);
 
             //add the exponential back off policy to the subscription
-            AddRetrySettingsToSubscription(subscription, settingsModel.RetrySettings.MinimumBackOffInSeconds, 
-                settingsModel.RetrySettings.MaximumBackOffInSeconds);
+            AddRetrySettingsToSubscription(subscription, settingsModel.MinimumBackOffInSeconds,
+                settingsModel.MaximumBackOffInSeconds);
 
             //add the deadletter policy to the subscription
-            AddDeadLetterPolicyToSubscription(subscription, deadletterTopic, settingsModel.RetrySettings.MaximumDeliveryAttempts);
+            AddDeadLetterPolicyToSubscription(subscription, deadletterTopic, settingsModel.MaximumDeliveryAttempts);
 
             //update the original subscription with the retry and deadletter changes
             return UpdateSubscription(subscription);
         }
 
-        private Topic CreateDeadLetterTopicAndSubscription(string projectId, string topicId, string subscriptionId, SubscriptionSettingsModel settingsModel)
+        private Topic CreateDeadLetterTopicAndSubscription(string projectId, string topicId, string subscriptionId, int ackTimeoutInSeconds)
         {
             //create dead letter topic
             var deadletterTopicId = $"{topicId}-deadletter";
@@ -52,7 +52,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
 
             //create dead letter subscription
             var deadletterSubscriptionId = $"{subscriptionId}-deadletter";
-            _subscriptionService.CreateSubscription(projectId, deadletterTopicId, deadletterSubscriptionId, settingsModel.AckTimeoutInSeconds);
+            _subscriptionService.CreateSubscription(projectId, deadletterTopicId, deadletterSubscriptionId, ackTimeoutInSeconds);
 
             return topic;
         }
@@ -92,7 +92,8 @@ namespace Blaise.Nuget.PubSub.Core.Services
                 });
         }
 
-        private static void GrantSubscriberPermissionsForSubscription(Subscription subscription)
+        private static void GrantSubscriberPermissionsForSubscription(Subscription subscription,
+            string serviceAccountName)
         {
             var publisherServiceClient = PublisherServiceApiClient.Create();
 
@@ -105,7 +106,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
                     {
                         new Binding {
                             Role = "roles/pubsub.subscriber",
-                            Members = { "serviceAccount:" } }
+                            Members = { $"serviceAccount:{serviceAccountName}@gcp-sa-pubsub.iam.gserviceaccount.com" } }
                     }
                 }
             };
@@ -113,7 +114,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
             publisherServiceClient.SetIamPolicy(subscriptionRequest);
         }
 
-        private static void GrantPublishPermissionsForTopic(Topic topic)
+        private static void GrantPublishPermissionsForTopic(Topic topic, string serviceAccountName)
         {
             var publisherServiceClient = PublisherServiceApiClient.Create();
 
@@ -126,7 +127,7 @@ namespace Blaise.Nuget.PubSub.Core.Services
                     {
                         new Binding {
                             Role = "roles/pubsub.publisher",
-                            Members = { "serviceAccount:" } }
+                            Members = { $"serviceAccount:{serviceAccountName}@gcp-sa-pubsub.iam.gserviceaccount.com" } }
                     }
                 }
             };

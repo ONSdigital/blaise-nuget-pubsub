@@ -10,5 +10,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Helpers
         public string TopicId => ConfigurationManager.AppSettings["TopicId"];
 
         public string SubscriptionId => ConfigurationManager.AppSettings["SubscriptionId"];
+
+        public string ServiceAccountName => ConfigurationManager.AppSettings["ServiceAccountName"];
     }
 }
