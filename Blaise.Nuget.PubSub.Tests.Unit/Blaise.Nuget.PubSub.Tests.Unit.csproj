@@ -124,6 +124,7 @@
   <ItemGroup>
     <Compile Include="Api\FluentQueueApiTests.cs" />
     <Compile Include="Helpers\TestMessageHandler.cs" />
+    <Compile Include="Models\RetrySettingsModelTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +145,7 @@
       <Name>Blaise.Nuget.PubSub.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -10,7 +10,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
-        private int _messageTimeoutInSeconds;
+        private int _ackTimeoutInSeconds;
 
         private TopicService _topicService;
 
@@ -24,10 +24,12 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         [SetUp]
         public void Setup()
         {
-            _projectId = "ons-blaise-dev";
-            _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            var configurationHelper = new ConfigurationHelper();
+            _projectId = configurationHelper.ProjectId;
+            _topicId = $"{configurationHelper.TopicId}-{Guid.NewGuid()}";
+           
             _subscriptionId = string.Empty;
-            _messageTimeoutInSeconds = 60;
+            _ackTimeoutInSeconds = 60;
 
             _topicService = new TopicService();
             _topicService.CreateTopic(_projectId, _topicId);
@@ -50,7 +52,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Given_A_Subscription_Does_Not_Exist_When_I_Call_SubscriptionExists_Then_False_Is_Returned()
         {
             //arrange
-            var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            var configurationHelper = new ConfigurationHelper();
+            var subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
 
             //act
             var result = _sut.SubscriptionExists(_projectId, subscriptionId);
@@ -65,8 +68,9 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Given_A_Subscription_Exists_When_I_Call_TopicExists_Then_True_Is_Returned()
         {
             //arrange
-            _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            var configurationHelper = new ConfigurationHelper();
+            _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
 
             //act
             var result = _sut.SubscriptionExists(_projectId, _subscriptionId);
@@ -81,11 +85,12 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Given_A_Subscription_Does_Not_Exist_When_I_Call_CreateSubscription_The_Subscription_Is_Created()
         {
             //arrange
-            _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
+            var configurationHelper = new ConfigurationHelper();
+            _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
             Assert.IsFalse(_sut.SubscriptionExists(_projectId, _subscriptionId));
 
             //act
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
 
             //assert
             Assert.IsTrue(_sut.SubscriptionExists(_projectId, _subscriptionId));
@@ -95,48 +100,24 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Given_A_Subscription_Exists_When_I_Call_CreateSubscription_Then_An_Exception_Is_Not_Thrown()
         {
             //arrange
-            _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
+            var configurationHelper = new ConfigurationHelper();
+            _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
 
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
             Assert.IsTrue(_sut.SubscriptionExists(_projectId, _subscriptionId));
 
             //act && assert
-            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
-        }
-
-        [TestCase(10)]
-        [TestCase(60)]
-        [TestCase(600)]
-        public void Given_ValidMessageTimeoutInSeconds_When_I_Call_CreateSubscription_Then_An_ArgumentOutOfRangeException_Is_Not_Thrown(int messageTimeoutInSeconds)
-        {
-            //arrange
-            _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-
-            //act && assert
-            Assert.DoesNotThrow(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, messageTimeoutInSeconds));
-        }
-
-        [TestCase(-1)]
-        [TestCase(0)]
-        [TestCase(9)]
-        [TestCase(601)]
-        public void Given_InvalidMessageTimeoutInSeconds_When_I_Call_CreateSubscription_Then_An_ArgumentOutOfRangeException_Is_Thrown(int messageTimeoutInSeconds)
-        {
-            //arrange
-            _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-
-            //act && assert
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, messageTimeoutInSeconds));
-            Assert.AreEqual("The deadline for acking messages must be between '1' and '600'", exception.ParamName);
+            _sut.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
         }
 
         [Test]
         public void Given_A_Subscription_Exists_When_I_Call_DeleteSubscription_The_Subscription_Is_Deleted()
         {
             //arrange
-            var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            var configurationHelper = new ConfigurationHelper();
+            var subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
 
-            _sut.CreateSubscription(_projectId, _topicId, subscriptionId, _messageTimeoutInSeconds);
+            _sut.CreateSubscription(_projectId, _topicId, subscriptionId, _ackTimeoutInSeconds);
             Assert.IsTrue(_sut.SubscriptionExists(_projectId, subscriptionId));
 
             //act
@@ -150,7 +131,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         public void Given_A_Subscription_Does_Not_Exist_When_I_Call_DeleteSubscription_The_An_Exception_Is_Not_Thrown()
         {
             //arrange
-            var subscriptionId = $"blaise-nuget-topic-{Guid.NewGuid()}";
+            var configurationHelper = new ConfigurationHelper();
+            var subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
 
             Assert.IsFalse(_sut.SubscriptionExists(_projectId, subscriptionId));
 

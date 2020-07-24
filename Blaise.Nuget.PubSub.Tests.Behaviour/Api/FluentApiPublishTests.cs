@@ -11,7 +11,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
-        private int _messageTimeoutInSeconds;
+        private int _ackTimeoutInSeconds;
 
         private MessageHelper _messageHelper;
         private TopicService _topicService;
@@ -30,11 +30,13 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _messageHelper = new MessageHelper();
             _topicService = new TopicService();
             _subscriptionService = new SubscriptionService();
-
-            _projectId = "ons-blaise-dev";
-            _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-            _messageTimeoutInSeconds = 60;
+            
+            var configurationHelper = new ConfigurationHelper();
+            _projectId = configurationHelper.ProjectId;
+            _topicId = $"{configurationHelper.TopicId}-{Guid.NewGuid()}";
+            _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
+            
+            _ackTimeoutInSeconds = 60;
 
             _sut = new FluentQueueApi();
         }
@@ -53,7 +55,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             var message = $"Hello, world {Guid.NewGuid()}";
 
             _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
 
             //act
             _sut
@@ -80,7 +82,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _sut
                 .WithProject(_projectId)
                 .CreateTopic(_topicId)
-                .CreateSubscription(_subscriptionId, _messageTimeoutInSeconds)
+                .CreateSubscription(_subscriptionId, _ackTimeoutInSeconds)
                 .Publish(message);
 
             var result = _messageHelper.GetMessage(_projectId, _subscriptionId);

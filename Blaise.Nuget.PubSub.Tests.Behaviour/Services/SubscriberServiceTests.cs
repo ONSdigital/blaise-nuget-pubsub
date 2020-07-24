@@ -11,7 +11,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
-        private int _messageTimeoutInSeconds;
+        private int _ackTimeoutInSeconds;
 
         private TestMessageHandler _messageHandler;
         private TopicService _topicService;
@@ -29,10 +29,12 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         [SetUp]
         public void Setup()
         {
-            _projectId = "ons-blaise-dev";
-            _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            _subscriptionId = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-            _messageTimeoutInSeconds = 60;
+            var configurationHelper = new ConfigurationHelper();
+            _projectId = configurationHelper.ProjectId;
+            _topicId = $"{configurationHelper.TopicId}-{Guid.NewGuid()}";
+            _subscriptionId = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
+
+            _ackTimeoutInSeconds = 60;
 
             _messageHandler = new TestMessageHandler();
             _topicService = new TopicService();
@@ -41,7 +43,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _messageHelper = new MessageHelper();
 
             _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _messageTimeoutInSeconds);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscriptionId, _ackTimeoutInSeconds);
 
             _sut = new SubscriberService(); 
         }
@@ -82,7 +84,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
 
         [Test]
         public void
-            Given_A_Message_cannot_Be_Processed_When_I_Call_StartConsuming_Then_The_Message_Remains_on_The_Subscription()
+            Given_A_Message_Cannot_Be_Processed_When_I_Call_StartConsuming_Then_The_Message_Remains_on_The_Subscription()
         {
             //arrange
             var message = $"Hello, world {Guid.NewGuid()}";

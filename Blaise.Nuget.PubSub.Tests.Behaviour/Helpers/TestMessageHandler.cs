@@ -7,11 +7,14 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Helpers
     {
         public List<string> MessagesHandled { get; set; }
 
+        public List<string> MessagesNotHandled { get; set; }
+
         private bool _result;
 
         public TestMessageHandler()
         {
             MessagesHandled = new List<string>();
+            MessagesNotHandled = new List<string>();
             _result = true;
         }
 
@@ -25,6 +28,10 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Helpers
             if (_result)
             {
                 MessagesHandled.Add(message);
+            }
+            else
+            {
+                MessagesNotHandled.Add(message);
             }
 
             return _result;

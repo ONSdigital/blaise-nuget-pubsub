@@ -11,7 +11,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
         private string _topicId;
         private string _subscription1Id;
         private string _subscription2Id;
-        private int _messageTimeoutInSeconds;
+        private int _ackTimeoutInSeconds;
 
         private MessageHelper _messageHelper;
         private TopicService _topicService;
@@ -27,19 +27,21 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.MultipleSubscriptions
         [SetUp]
         public void Setup()
         {
-            _projectId = "ons-blaise-dev";
-            _topicId = $"blaise-nuget-topic-{Guid.NewGuid()}";
-            _subscription1Id = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-            _subscription2Id = $"blaise-nuget-subscription-{Guid.NewGuid()}";
-            _messageTimeoutInSeconds = 60;
+            var configurationHelper = new ConfigurationHelper();
+            _projectId = configurationHelper.ProjectId;
+            _topicId = $"{configurationHelper.TopicId}-{Guid.NewGuid()}";
+            _subscription1Id = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
+            _subscription2Id = $"{configurationHelper.SubscriptionId}-{Guid.NewGuid()}";
+
+            _ackTimeoutInSeconds = 60;
 
             _messageHelper = new MessageHelper();
             _topicService = new TopicService();
             _subscriptionService = new SubscriptionService();
 
             _topicService.CreateTopic(_projectId, _topicId);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscription1Id, _messageTimeoutInSeconds);
-            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscription2Id, _messageTimeoutInSeconds);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscription1Id, _ackTimeoutInSeconds);
+            _subscriptionService.CreateSubscription(_projectId, _topicId, _subscription2Id, _ackTimeoutInSeconds);
 
             _sut = new PublisherService();
         }

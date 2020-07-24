@@ -1,8 +1,9 @@
-﻿using Blaise.Nuget.PubSub.Core.Interfaces;
+﻿using System.Collections.Generic;
+using Blaise.Nuget.PubSub.Core.Interfaces;
 using Google.Api.Gax.ResourceNames;
 using Google.Cloud.PubSub.V1;
-using System;
 using System.Linq;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Blaise.Nuget.PubSub.Core.Services
 {
@@ -10,14 +11,10 @@ namespace Blaise.Nuget.PubSub.Core.Services
     {
         private SubscriberServiceApiClient _subscriberServiceClient;
 
-        public Subscription CreateSubscription(string projectId, string topicId, string subscriptionId, int messageTimeoutInSeconds)
+        public Subscription CreateSubscription(string projectId, string topicId, string subscriptionId,
+            int ackTimeoutInSeconds)
         {
             var client = GetSubscriberClient();
-
-            if (messageTimeoutInSeconds < 10 || messageTimeoutInSeconds > 600)
-            {
-                throw new ArgumentOutOfRangeException("The deadline for acking messages must be between '1' and '600'");
-            }
 
             if (SubscriptionExists(projectId, subscriptionId))
             {
@@ -26,7 +23,9 @@ namespace Blaise.Nuget.PubSub.Core.Services
 
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
             var topicName = new TopicName(projectId, topicId);
-            return client.CreateSubscription(subscriptionName, topicName, pushConfig: null, ackDeadlineSeconds: messageTimeoutInSeconds);
+            var subscription = client.CreateSubscription(subscriptionName, topicName, null, ackTimeoutInSeconds);
+
+            return subscription;
         }
 
         public void DeleteSubscription(string projectId, string subscriptionId)
@@ -57,6 +56,21 @@ namespace Blaise.Nuget.PubSub.Core.Services
             var subscriptions = client.ListSubscriptions(projectName);
 
             return subscriptions.Any(s => s.SubscriptionName.SubscriptionId == subscriptionId);
+        }
+
+        public Subscription UpdateSubscription(Subscription subscription, int fieldMaskNumber)
+        {
+            var subscriberServiceClient = SubscriberServiceApiClient.Create();
+
+            return subscriberServiceClient.UpdateSubscription(
+                new UpdateSubscriptionRequest
+                {
+                    Subscription = subscription,
+                    UpdateMask = FieldMask.FromFieldNumbers<Subscription>(new List<int>
+                    {
+                        fieldMaskNumber
+                    })
+                });
         }
 
         private SubscriberServiceApiClient GetSubscriberClient()
