@@ -150,7 +150,6 @@
     <Compile Include="Interfaces\ISubscriberService.cs" />
     <Compile Include="Interfaces\ISubscriptionService.cs" />
     <Compile Include="Interfaces\ITopicService.cs" />
-    <Compile Include="Models\RetrySettingsModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\DeadLetterService.cs" />
     <Compile Include="Services\ExponentialBackOffService.cs" />
