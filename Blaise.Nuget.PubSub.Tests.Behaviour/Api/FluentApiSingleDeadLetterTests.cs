@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using Blaise.Nuget.PubSub.Api;
-using Blaise.Nuget.PubSub.Contracts.Enums;
 using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
@@ -19,14 +17,12 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 
         private string _deadLetterTopicId;
         private string _deadLetterSubscriptionId;
-        private string _serviceAccountName;
 
         private TestMessageHandler _messageHandler1;
         private TestMessageHandler _messageHandler2;
         private SubscriptionService _subscriptionService;
         private TopicService _topicService;
         private MessageHelper _messageHelper;
-        private IamPolicyRequestService _iamPolicyRequestService;
 
         private FluentQueueApi _sut1;
         private FluentQueueApi _sut2;
@@ -44,7 +40,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _topicService = new TopicService();
             _subscriptionService = new SubscriptionService();
             _messageHelper = new MessageHelper();
-            _iamPolicyRequestService = new IamPolicyRequestService();
 
             var configurationHelper = new ConfigurationHelper();
             _projectId = configurationHelper.ProjectId;
@@ -57,8 +52,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _deadLetterTopicId = $"{configurationHelper.DeadletterTopicId}-{Guid.NewGuid()}";
             _deadLetterSubscriptionId = $"{configurationHelper.DeadletterSubscriptionId}-{Guid.NewGuid()}";
 
-            _serviceAccountName = configurationHelper.ServiceAccountName;
-
             _topicService.CreateTopic(_projectId, _topic1Id);
             _topicService.CreateTopic(_projectId, _topic2Id);
             CreateDeadletterTopicAndSubscription();
@@ -69,9 +62,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         
         private void CreateDeadletterTopicAndSubscription()
         {
-            var deadletterTopic = _topicService.CreateTopic(_projectId, _deadLetterTopicId);
             _subscriptionService.CreateSubscription(_projectId, _deadLetterTopicId, _deadLetterSubscriptionId, 600);
-            _iamPolicyRequestService.GrantPermissionsForAccount(deadletterTopic.Name, _serviceAccountName, IamRoleType.Publisher);
         }
 
         [TearDown]
@@ -106,14 +97,14 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
                 .WithProject(_projectId)
                 .WithTopic(_topic1Id)
                 .CreateSubscription(_subscription1Id, 60)
-                .WithDeadLetter(_serviceAccountName, _deadLetterTopicId, maxAttempts)
+                .WithDeadLetter(_deadLetterTopicId, maxAttempts)
                 .StartConsuming(_messageHandler1, true);
 
             _sut2
                 .WithProject(_projectId)
                 .WithTopic(_topic2Id)
                 .CreateSubscription(_subscription2Id, 60)
-                .WithDeadLetter(_serviceAccountName, _deadLetterTopicId, maxAttempts)
+                .WithDeadLetter(_deadLetterTopicId, maxAttempts)
                 .StartConsuming(_messageHandler2, true);
 
             PublishMessage(message1, _topic1Id);
@@ -137,7 +128,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             Assert.IsTrue(deadletterMessage1 == message1 || deadletterMessage2 == message1);
             Assert.IsTrue(deadletterMessage1 == message2 || deadletterMessage2 == message2);
         }
-
 
         private void PublishMessage(string message, string topicId)
         {

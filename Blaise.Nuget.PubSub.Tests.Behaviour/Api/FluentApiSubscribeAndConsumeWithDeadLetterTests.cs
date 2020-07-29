@@ -89,7 +89,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
                 .WithProject(_projectId)
                 .WithTopic(_topicId)
                 .CreateSubscription(_subscriptionId, 60)
-                .WithDeadLetter(_serviceAccountName, _deadLetterTopicId, maxAttempts)
+                .WithDeadLetter(_deadLetterTopicId, maxAttempts)
                 .StartConsuming(_messageHandler, true);
 
             PublishMessage(message1);
@@ -117,7 +117,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
                 .WithProject(_projectId)
                 .WithTopic(_topicId)
                 .CreateSubscription(_subscriptionId, 60)
-                .WithDeadLetter(_serviceAccountName, _deadLetterTopicId, maxAttempts)
+                .WithDeadLetter(_deadLetterTopicId, maxAttempts)
                 .StartConsuming(_messageHandler, true);
 
             PublishMessage(message1);

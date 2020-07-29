@@ -9,7 +9,7 @@ namespace Blaise.Nuget.PubSub.Contracts.Interfaces
 
         IFluentQueueApi WithExponentialBackOff(int minimumBackOffInSeconds = 10, int maximumBackOffInSeconds = 600);
 
-        IFluentQueueApi WithDeadLetter(string serviceAccountName, string deadLetterTopicId, int maximumDeliveryAttempts = 5);
+        IFluentQueueApi WithDeadLetter(string deadLetterTopicId, int maximumDeliveryAttempts = 5);
 
         //Throttle is used to control message flow to one message at a time
         void StartConsuming(IMessageHandler messageHandler, bool throttle = false); 

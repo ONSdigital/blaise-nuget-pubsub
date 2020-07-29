@@ -6,7 +6,6 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using Blaise.Nuget.PubSub.Contracts.Enums;
 using Google.Cloud.PubSub.V1;
 
 namespace Blaise.Nuget.PubSub.Tests.Unit.Api
@@ -19,7 +18,6 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         private Mock<ISubscriberService> _subscriberServiceMock;
         private Mock<IDeadLetterService> _deadLetterServiceMock;
         private Mock<IExponentialBackOffService> _backOffMock;
-        private Mock<IIamPolicyRequestService> _iamPolicyRequestServiceMock;
 
         private readonly string _projectId;
         private readonly string _topicId;
@@ -45,7 +43,6 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _subscriberServiceMock = new Mock<ISubscriberService>();
             _deadLetterServiceMock = new Mock<IDeadLetterService>();
             _backOffMock = new Mock<IExponentialBackOffService>();
-            _iamPolicyRequestServiceMock = new Mock<IIamPolicyRequestService>();
 
             _sut = new FluentQueueApi(
                 _publisherServiceMock.Object,
@@ -53,8 +50,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
                 _topicServiceMock.Object,
                 _subscriberServiceMock.Object,
                 _deadLetterServiceMock.Object,
-                _backOffMock.Object,
-                _iamPolicyRequestServiceMock.Object);
+                _backOffMock.Object);
         }
 
         [Test]
@@ -622,7 +618,6 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_Valid_Arguments_When_I_Call_WithDeadLetter_Then_It_Calls_The_Correct_Service_Method()
         {
             //arrange
-            var serviceAccountName = "Account123";
             var maximumDeliveryAttempts = 5;
             var deadLetterTopicId = "Topic1";
             var subscriptionName = "subscriptionName1";
@@ -635,13 +630,11 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.WithSubscription(_subscriptionId);
 
             //act
-            _sut.WithDeadLetter(serviceAccountName, deadLetterTopicId, maximumDeliveryAttempts);
+            _sut.WithDeadLetter(deadLetterTopicId, maximumDeliveryAttempts);
 
             //assert
             _deadLetterServiceMock.Verify(v => v.UpdateSubscriptionWithDeadLetter(_projectId, _subscriptionId,
                 deadLetterTopicId, maximumDeliveryAttempts), Times.Once);
-
-            _iamPolicyRequestServiceMock.Verify(v => v.GrantPermissionsForAccount(subscriptionName, serviceAccountName, IamRoleType.Subscriber));
         }
 
         [TestCase(5)]
@@ -650,7 +643,6 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_MaximumDeliveryAttempts_Value_Is_Provided_When_I_Call_WithDeadLetter_Then_The_Correct_Value_Is_Used(int maximumDeliveryAttempts)
         {
             //arrange
-            var serviceAccountName = "Account123";
             var deadLetterTopicId = "Topic1";
 
             _sut.WithProject(_projectId);
@@ -660,7 +652,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
                 .Returns(new Subscription());
 
             //act
-            _sut.WithDeadLetter(serviceAccountName, deadLetterTopicId, maximumDeliveryAttempts);
+            _sut.WithDeadLetter(deadLetterTopicId, maximumDeliveryAttempts);
 
             //assert
             _deadLetterServiceMock.Verify(v => v.UpdateSubscriptionWithDeadLetter(_projectId, _subscriptionId,
@@ -671,7 +663,6 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_No_MaximumDeliveryAttempts_Value_Is_Provided_When_I_Call_WithDeadLetter_Then_The_Correct_Default_Value_Is_Used()
         {
             //arrange
-            var serviceAccountName = "Account123";
             var deadLetterTopicId = "Topic1";
 
             _sut.WithProject(_projectId);
@@ -681,7 +672,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
                 .Returns(new Subscription());
 
             //act
-            _sut.WithDeadLetter(serviceAccountName, deadLetterTopicId);
+            _sut.WithDeadLetter(deadLetterTopicId);
 
             //assert
             _deadLetterServiceMock.Verify(v => v.UpdateSubscriptionWithDeadLetter(_projectId, _subscriptionId,
@@ -692,7 +683,6 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_Valid_Arguments_When_I_Call_WithDeadLetter_Then_It_Returns_Same_Instance_Of_Itself_Back()
         {
             //arrange
-            var serviceAccountName = "Account123";
             var deadLetterTopicId = "Topic1";
 
             _sut.WithProject(_projectId);
@@ -702,7 +692,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
                 .Returns(new Subscription());
 
             //act
-            var result = _sut.WithDeadLetter(serviceAccountName, deadLetterTopicId);
+            var result = _sut.WithDeadLetter(deadLetterTopicId);
 
             //assert
             Assert.IsNotNull(result);
@@ -711,46 +701,18 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_An_Empty_ServiceAccountName_When_I_Call_WithDeadLetter_Then_An_ArgumentException_Is_Thrown()
-        {
-            //arrange
-            var deadLetterTopicId = "Topic1";
-
-            //act && assert
-            var exception = Assert.Throws<ArgumentException>(() => _sut.WithDeadLetter(string.Empty, deadLetterTopicId));
-            Assert.AreEqual("A value for the argument 'serviceAccountName' must be supplied", exception.Message);
-        }
-
-        [Test]
-        public void Given_A_Null_ServiceAccountName_When_I_Call_WithDeadLetter_Then_An_ArgumentNullException_Is_Thrown()
-        {
-            //arrange
-            var deadLetterTopicId = "Topic1";
-
-            //act && assert
-            var exception = Assert.Throws<ArgumentNullException>(() => _sut.WithDeadLetter(null, deadLetterTopicId));
-            Assert.AreEqual("serviceAccountName", exception.ParamName);
-        }
-
-        [Test]
         public void Given_An_Empty_DeadLetterTopicId_When_I_Call_WithDeadLetter_Then_An_ArgumentException_Is_Thrown()
         {
-            //arrange
-            var serviceAccountName = "Account123";
-
             //act && assert
-            var exception = Assert.Throws<ArgumentException>(() => _sut.WithDeadLetter(serviceAccountName, String.Empty));
+            var exception = Assert.Throws<ArgumentException>(() => _sut.WithDeadLetter(string.Empty));
             Assert.AreEqual("A value for the argument 'deadLetterTopicId' must be supplied", exception.Message);
         }
 
         [Test]
         public void Given_A_Null_deadLetterTopicId_When_I_Call_WithDeadLetter_Then_An_ArgumentNullException_Is_Thrown()
         {
-            //arrange
-            var serviceAccountName = "Account123";
-
             //act && assert
-            var exception = Assert.Throws<ArgumentNullException>(() => _sut.WithDeadLetter(serviceAccountName, null));
+            var exception = Assert.Throws<ArgumentNullException>(() => _sut.WithDeadLetter(null));
             Assert.AreEqual("deadLetterTopicId", exception.ParamName);
         }
 
@@ -761,11 +723,10 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_An_Invalid_MaximumDeliveryAttempts_Value_When_I_Call_WithExponentialBackOff_Then_An_ArgumentOutOfRangeException_Is_Thrown(int maximumDeliveryAttempts)
         {
             //arrange
-            var serviceAccountName = "Account123";
             var deadLetterTopicId = "Topic1";
 
             //act && assert
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _sut.WithDeadLetter(serviceAccountName, deadLetterTopicId, maximumDeliveryAttempts));
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _sut.WithDeadLetter(deadLetterTopicId, maximumDeliveryAttempts));
             Assert.AreEqual($"maximumDeliveryAttempts", exception.ParamName);
         }
         
@@ -774,12 +735,11 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_ProjectId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_WithDeadLetter_Then_A_NullReferenceExceptionIs_Thrown()
         {
             //arrange
-            var serviceAccountName = "Account123";
             var deadLetterTopicId = "Topic1";
             _sut.WithSubscription(_subscriptionId);
 
             //act && assert
-            var exception = Assert.Throws<NullReferenceException>(() => _sut.WithDeadLetter(serviceAccountName, deadLetterTopicId));
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.WithDeadLetter(deadLetterTopicId));
             Assert.AreEqual("The 'WithProject' step needs to be called prior to this", exception.Message);
         }
 
@@ -787,12 +747,11 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         public void Given_SubscriptionId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_WithDeadLetter_Then_A_NullReferenceExceptionIs_Thrown()
         {
             //arrange
-            var serviceAccountName = "Account123";
             var deadLetterTopicId = "Topic1";
             _sut.WithProject(_projectId);
 
             //act && assert
-            var exception = Assert.Throws<NullReferenceException>(() => _sut.WithDeadLetter(serviceAccountName, deadLetterTopicId));
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.WithDeadLetter(deadLetterTopicId));
             Assert.AreEqual("The 'WithSubscription' or 'CreateSubscription' step needs to be called prior to this", exception.Message);
         }
     }

@@ -5,7 +5,6 @@ using Blaise.Nuget.PubSub.Core.Interfaces;
 using Blaise.Nuget.PubSub.Core.Services;
 using System;
 using System.Collections.Generic;
-using Blaise.Nuget.PubSub.Contracts.Enums;
 using Unity;
 
 namespace Blaise.Nuget.PubSub.Api
@@ -18,7 +17,6 @@ namespace Blaise.Nuget.PubSub.Api
         private readonly ISubscriberService _subscriberService;
         private readonly IDeadLetterService _deadLetterService;
         private readonly IExponentialBackOffService _exponentialBackOffService;
-        private readonly IIamPolicyRequestService _iamPolicyRequestService;
 
         private string _projectId;
         private string _topicId;
@@ -31,8 +29,7 @@ namespace Blaise.Nuget.PubSub.Api
             ITopicService topicService,
             ISubscriberService subscriberService,
             IDeadLetterService deadLetterService,
-            IExponentialBackOffService exponentialBackOffService,
-            IIamPolicyRequestService iamPolicyRequestService)
+            IExponentialBackOffService exponentialBackOffService)
         {
             _publisherService = publisherService;
             _subscriptionService = subscriptionService;
@@ -40,7 +37,6 @@ namespace Blaise.Nuget.PubSub.Api
             _subscriberService = subscriberService;
             _deadLetterService = deadLetterService;
             _exponentialBackOffService = exponentialBackOffService;
-            _iamPolicyRequestService = iamPolicyRequestService;
         }
 
         public FluentQueueApi()
@@ -60,7 +56,6 @@ namespace Blaise.Nuget.PubSub.Api
             _subscriberService = unityContainer.Resolve<ISubscriberService>();
             _deadLetterService = unityContainer.Resolve<IDeadLetterService>();
             _exponentialBackOffService = unityContainer.Resolve<IExponentialBackOffService>();
-            _iamPolicyRequestService = unityContainer.Resolve<IIamPolicyRequestService>();
         }
 
         public IFluentQueueApi WithProject(string projectId)
@@ -113,19 +108,16 @@ namespace Blaise.Nuget.PubSub.Api
             return this;
         }
 
-        public IFluentQueueApi WithDeadLetter(string serviceAccountName, string deadLetterTopicId, int maximumDeliveryAttempts = 5)
+        public IFluentQueueApi WithDeadLetter(string deadLetterTopicId, int maximumDeliveryAttempts = 5)
         {
-            serviceAccountName.ThrowExceptionIfNullOrEmpty("serviceAccountName");
             deadLetterTopicId.ThrowExceptionIfNullOrEmpty("deadLetterTopicId");
             ValidateMaximumDeliveryAttempts(maximumDeliveryAttempts);
             
             ValidateProjectIdIsSet();
             ValidateSubscriptionIdIsSet();
 
-            var subscription = _deadLetterService.UpdateSubscriptionWithDeadLetter(_projectId, _subscriptionId, deadLetterTopicId,
+            _deadLetterService.UpdateSubscriptionWithDeadLetter(_projectId, _subscriptionId, deadLetterTopicId,
                 maximumDeliveryAttempts);
-
-            _iamPolicyRequestService.GrantPermissionsForAccount(subscription.Name, serviceAccountName, IamRoleType.Subscriber);
 
             return this;
         }
