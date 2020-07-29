@@ -62,6 +62,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         
         private void CreateDeadletterTopicAndSubscription()
         {
+            _topicService.CreateTopic(_projectId, _deadLetterTopicId);
             _subscriptionService.CreateSubscription(_projectId, _deadLetterTopicId, _deadLetterSubscriptionId, 600);
         }
 

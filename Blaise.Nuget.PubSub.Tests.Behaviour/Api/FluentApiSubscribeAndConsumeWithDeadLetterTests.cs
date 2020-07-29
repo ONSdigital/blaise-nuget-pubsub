@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using Blaise.Nuget.PubSub.Api;
-using Blaise.Nuget.PubSub.Contracts.Enums;
 using Blaise.Nuget.PubSub.Core.Services;
 using Blaise.Nuget.PubSub.Tests.Behaviour.Helpers;
 using NUnit.Framework;
@@ -15,13 +14,11 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
         private string _deadLetterTopicId;
         private string _subscriptionId;
         private string _deadLetterSubscriptionId;
-        private string _serviceAccountName;
 
         private TestMessageHandler _messageHandler;
         private SubscriptionService _subscriptionService;
         private TopicService _topicService;
         private MessageHelper _messageHelper;
-        private IamPolicyRequestService _iamPolicyRequestService;
 
         private FluentQueueApi _sut;
 
@@ -37,7 +34,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _topicService = new TopicService();
             _subscriptionService = new SubscriptionService();
             _messageHelper = new MessageHelper();
-            _iamPolicyRequestService = new IamPolicyRequestService();
 
             var configurationHelper = new ConfigurationHelper();
             _projectId = configurationHelper.ProjectId;
@@ -48,8 +44,6 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
             _deadLetterTopicId = $"{configurationHelper.DeadletterTopicId}-{Guid.NewGuid()}";
             _deadLetterSubscriptionId = $"{configurationHelper.DeadletterSubscriptionId}-{Guid.NewGuid()}";
             
-            _serviceAccountName = configurationHelper.ServiceAccountName;
-
             _topicService.CreateTopic(_projectId, _topicId);
             CreateDeadletterTopicAndSubscription();
 
@@ -59,9 +53,8 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Api
 
         private void CreateDeadletterTopicAndSubscription()
         {
-            var deadletterTopic = _topicService.CreateTopic(_projectId, _deadLetterTopicId);
+            _topicService.CreateTopic(_projectId, _deadLetterTopicId);
             _subscriptionService.CreateSubscription(_projectId, _deadLetterTopicId, _deadLetterSubscriptionId, 600);
-            _iamPolicyRequestService.GrantPermissionsForAccount(deadletterTopic.Name, _serviceAccountName, IamRoleType.Publisher);
         }
 
         [TearDown]
