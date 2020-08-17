@@ -157,6 +157,7 @@
     <Compile Include="Interfaces\IDeadLetterService.cs" />
     <Compile Include="Services\IamPolicyRequestService.cs" />
     <Compile Include="Interfaces\IIamPolicyRequestService.cs" />
+    <Compile Include="Interfaces\ISnapshotService.cs" />
     <Compile Include="Services\PublisherService.cs" />
     <Compile Include="Services\SnapshotService.cs" />
     <Compile Include="Services\SubscriberService.cs" />
