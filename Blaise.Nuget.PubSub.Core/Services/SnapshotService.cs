@@ -11,10 +11,5 @@ namespace Blaise.Nuget.PubSub.Core.Services
         {
             _subscriberServiceClient = subscriberServiceClient;
         }
-
-        public void CreateSnapshot()
-        {
-
-        }
     }
 }
