@@ -158,6 +158,7 @@
     <Compile Include="Services\IamPolicyRequestService.cs" />
     <Compile Include="Interfaces\IIamPolicyRequestService.cs" />
     <Compile Include="Services\PublisherService.cs" />
+    <Compile Include="Services\SnapshotService.cs" />
     <Compile Include="Services\SubscriberService.cs" />
     <Compile Include="Services\SubscriptionService.cs" />
     <Compile Include="Services\TopicService.cs" />
