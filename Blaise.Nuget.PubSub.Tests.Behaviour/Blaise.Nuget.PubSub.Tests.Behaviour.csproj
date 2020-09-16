@@ -124,6 +124,7 @@
     <Compile Include="Helpers\ConfigurationHelper.cs" />
     <Compile Include="Helpers\MessageHelper.cs" />
     <Compile Include="Helpers\TestConcurrencyMessageHandler.cs" />
+    <Compile Include="Helpers\TestMessageTriggerHandler.cs" />
     <Compile Include="Helpers\TestMessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MultipleSubscriptions\PublishToSingleTopicWithMultipleSubscriptionsTests.cs" />
