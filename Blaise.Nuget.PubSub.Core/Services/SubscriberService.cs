@@ -19,6 +19,12 @@ namespace Blaise.Nuget.PubSub.Core.Services
             createSubscriptionTask.WaitAndUnwrapException();
         }
 
+        public void StartConsuming(string projectId, string subscriptionId, IMessageTriggerHandler messageHandler, bool throttle = false)
+        {
+            var createSubscriptionTask = StartConsumingAsync(projectId, subscriptionId, messageHandler, throttle);
+            createSubscriptionTask.WaitAndUnwrapException();
+        }
+
         public void StopConsuming()
         {
             var cancelSubscriptionTask = StopConsumingAsync();
@@ -44,6 +50,30 @@ namespace Blaise.Nuget.PubSub.Core.Services
                 return Task.FromResult(messageHandler.HandleMessage(message) 
                     ? SubscriberClient.Reply.Ack 
                     : SubscriberClient.Reply.Nack);
+
+            }).ConfigureAwait(false);
+            #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        }
+
+        private async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageTriggerHandler messageHandler, bool throttle)
+        {
+            var subscriptionName = new SubscriptionName(projectId, subscriptionId);
+
+            var settings = throttle
+                ? new SubscriberClient.Settings { FlowControlSettings = new FlowControlSettings(1L, null) }
+                : null;
+
+            _subscriberClient = await SubscriberClient.CreateAsync(subscriptionName, null, settings);
+
+            //Blame google
+            #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            _subscriberClient.StartAsync((msg, cancellationToken) =>
+            {
+                var message = msg.Data.ToStringUtf8();
+
+                Task.Run(() => messageHandler.HandleMessage(message), cancellationToken);
+
+                return Task.FromResult(SubscriberClient.Reply.Ack);
 
             }).ConfigureAwait(false);
             #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed

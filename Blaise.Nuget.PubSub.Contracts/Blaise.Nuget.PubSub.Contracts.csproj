@@ -53,6 +53,7 @@
     <Compile Include="Interfaces\IFluentPublishApi.cs" />
     <Compile Include="Interfaces\IFluentQueueApi.cs" />
     <Compile Include="Interfaces\IFluentSubscriptionApi.cs" />
+    <Compile Include="Interfaces\IMessageTriggerHandler.cs" />
     <Compile Include="Interfaces\IMessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

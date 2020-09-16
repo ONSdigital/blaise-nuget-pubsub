@@ -14,6 +14,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
         private int _ackTimeoutInSeconds;
 
         private TestMessageHandler _messageHandler;
+        private TestMessageTriggerHandler _messageTriggerHandler;
         private TopicService _topicService;
         private SubscriptionService _subscriptionService;
         private PublisherService _publisherService;
@@ -37,6 +38,7 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             _ackTimeoutInSeconds = 60;
 
             _messageHandler = new TestMessageHandler();
+            _messageTriggerHandler = new TestMessageTriggerHandler();
             _topicService = new TopicService();
             _subscriptionService = new SubscriptionService();
             _publisherService = new PublisherService();
@@ -145,6 +147,28 @@ namespace Blaise.Nuget.PubSub.Tests.Behaviour.Services
             Assert.IsNotNull(_messageHandler.MessagesHandled);
             Assert.AreEqual(1, _messageHandler.MessagesHandled.Count);
             Assert.IsTrue(_messageHandler.MessagesHandled.Contains(message1));
+        }
+
+        [Test]
+        public void Given_A_Message_Is_Available_When_I_Call_StartConsuming_For_Trigger_Message_Handler_Then_The_Message_Is_Processed()
+        {
+            //arrange
+            var message = $"Hello, world {Guid.NewGuid()}";
+
+
+            //act
+            _sut.StartConsuming(_projectId, _subscriptionId, _messageTriggerHandler);
+
+            PublishMessage(message);
+
+            Thread.Sleep(5000); // allow time for processing the messages off the queue
+
+            _sut.StopConsuming();
+
+            //assert
+            Assert.IsNotNull(_messageTriggerHandler.MessagesHandled);
+            Assert.AreEqual(1, _messageTriggerHandler.MessagesHandled.Count);
+            Assert.IsTrue(_messageTriggerHandler.MessagesHandled.Contains(message));
         }
 
         private void PublishMessage(string message)
