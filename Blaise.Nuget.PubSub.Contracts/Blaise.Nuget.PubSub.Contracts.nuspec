@@ -2,11 +2,12 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Blaise.Nuget.PubSub.Contracts</id>
-	<version>$version$</version>
+    <version>$version$</version>
     <authors>Jamie Kerr</authors>
     <owners>Jamie Kerr</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Contracts package for the API to interact with PubSub for Blaise</description>
+    <repository type="git" url="https://github.com/onsdigital/blaise-csharp-build.git" />
   </metadata>
   <files>
     <file src="bin\release\Blaise.Nuget.PubSub.Contracts.dll" target="lib\net472\Blaise.Nuget.PubSub.Contracts.dll" />
