@@ -130,6 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Blaise.Nuget.PubSub.Api.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
