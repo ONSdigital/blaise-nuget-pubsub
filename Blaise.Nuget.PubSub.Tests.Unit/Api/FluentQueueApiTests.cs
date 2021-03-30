@@ -408,7 +408,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_A_Null_MessageHandler_When_I_Call_StartConsuming_Then_An_ArgumentNullException_Is_Thrown()
+        public void Given_A_Null_MessageHandler_When_I_Call_StartConsuming_With_IMessageHandler_Then_An_ArgumentNullException_Is_Thrown()
         {
             //arrange
             _sut.WithProject(_projectId);
@@ -416,12 +416,12 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.WithSubscription(_subscriptionId);
 
             //act && assert
-            var exception = Assert.Throws<ArgumentNullException>(() => _sut.StartConsuming( null));
+            var exception = Assert.Throws<ArgumentNullException>(() => _sut.StartConsuming((IMessageHandler) null));
             Assert.AreEqual("The argument 'messageHandler' must be supplied", exception.ParamName);
         }
 
         [Test]
-        public void Given_Previous_Steps_Are_Setup_And_I_Do_Not_Supply_Throttle_When_I_Call_StartConsuming_Then_It_Calls_The_Correct_Service_Method()
+        public void Given_Previous_Steps_Are_Setup_And_I_Do_Not_Supply_Throttle_When_I_Call_StartConsuming_With_IMessageHandler_Then_It_Calls_The_Correct_Service_Method()
         {
             //arrange
             var messageHandler = new TestMessageHandler();
@@ -442,7 +442,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
 
         [TestCase(true)]
         [TestCase(false)]
-        public void Given_Previous_Steps_Are_Setup_And_I_Supply_Throttle_When_I_Call_StartConsuming_Then_It_Calls_The_Correct_Service_Method(bool throttle)
+        public void Given_Previous_Steps_Are_Setup_And_I_Supply_Throttle_When_I_Call_StartConsuming_With_IMessageHandler_Then_It_Calls_The_Correct_Service_Method(bool throttle)
         {
             //arrange
             var messageHandler = new TestMessageHandler();
@@ -462,7 +462,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_TopicId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_Then_A_NullReferenceExceptionIs_Thrown()
+        public void Given_TopicId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_With_IMessageHandler_Then_A_NullReferenceExceptionIs_Thrown()
         {
             //arrange
             var messageHandler = new TestMessageHandler();
@@ -475,10 +475,90 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_SubscriptionId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_Then_A_NullReferenceExceptionIs_Thrown()
+        public void Given_SubscriptionId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_With_IMessageHandler_Then_A_NullReferenceExceptionIs_Thrown()
         {
             //arrange
             var messageHandler = new TestMessageHandler();
+
+            _sut.WithProject(_projectId);
+
+            //act && assert
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.StartConsuming(messageHandler));
+            Assert.AreEqual("The 'WithSubscription' or 'CreateSubscription' step needs to be called prior to this", exception.Message);
+        }
+
+        [Test]
+        public void Given_A_Null_MessageHandler_When_I_Call_StartConsuming_With_IMessageTriggerHandler_Then_An_ArgumentNullException_Is_Thrown()
+        {
+            //arrange
+            _sut.WithProject(_projectId);
+            _sut.WithTopic(_topicId);
+            _sut.WithSubscription(_subscriptionId);
+
+            //act && assert
+            var exception = Assert.Throws<ArgumentNullException>(() => _sut.StartConsuming((IMessageTriggerHandler)null));
+            Assert.AreEqual("The argument 'messageHandler' must be supplied", exception.ParamName);
+        }
+
+        [Test]
+        public void Given_Previous_Steps_Are_Setup_And_I_Do_Not_Supply_Throttle_When_I_Call_StartConsuming_With_MessageTriggerHandler_Then_It_Calls_The_Correct_Service_Method()
+        {
+            //arrange
+            var messageHandler = new TestMessageTriggerHandler();
+
+
+            _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<IMessageTriggerHandler>(), It.IsAny<bool>()));
+
+            _sut.WithProject(_projectId);
+            _sut.WithSubscription(_subscriptionId);
+
+            //act
+            _sut.StartConsuming(messageHandler);
+
+            //assert
+            _subscriberServiceMock.Verify(v => v.StartConsuming(_projectId, _subscriptionId, messageHandler, false));
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Given_Previous_Steps_Are_Setup_And_I_Supply_Throttle_When_I_Call_StartConsuming_With_MessageTriggerHandler_Then_It_Calls_The_Correct_Service_Method(bool throttle)
+        {
+            //arrange
+            var messageHandler = new TestMessageTriggerHandler();
+
+
+            _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<IMessageHandler>(), It.IsAny<bool>()));
+
+            _sut.WithProject(_projectId);
+            _sut.WithSubscription(_subscriptionId);
+
+            //act
+            _sut.StartConsuming(messageHandler, throttle);
+
+            //assert
+            _subscriberServiceMock.Verify(v => v.StartConsuming(_projectId, _subscriptionId, messageHandler, throttle));
+        }
+
+        [Test]
+        public void Given_TopicId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_With_MessageTriggerHandler_Then_A_NullReferenceExceptionIs_Thrown()
+        {
+            //arrange
+            var messageHandler = new TestMessageTriggerHandler();
+
+            _sut.WithSubscription(_subscriptionId);
+
+            //act && assert
+            var exception = Assert.Throws<NullReferenceException>(() => _sut.StartConsuming(messageHandler));
+            Assert.AreEqual("The 'WithProject' step needs to be called prior to this", exception.Message);
+        }
+
+        [Test]
+        public void Given_SubscriptionId_Has_Not_Been_Set_In_A_Previous_Step_When_I_Call_StartConsuming_With_MessageTriggerHandler_Then_A_NullReferenceExceptionIs_Thrown()
+        {
+            //arrange
+            var messageHandler = new TestMessageTriggerHandler();
 
             _sut.WithProject(_projectId);
 

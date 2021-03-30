@@ -123,6 +123,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\FluentQueueApiTests.cs" />
+    <Compile Include="Helpers\TestMessageTriggerHandler.cs" />
     <Compile Include="Helpers\TestMessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

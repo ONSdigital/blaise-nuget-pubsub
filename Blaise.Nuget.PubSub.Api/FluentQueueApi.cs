@@ -160,6 +160,16 @@ namespace Blaise.Nuget.PubSub.Api
             _subscriberService.StartConsuming(_projectId, _subscriptionId, messageHandler, throttle);
         }
 
+        public void StartConsuming(IMessageTriggerHandler messageHandler, bool throttle = false)
+        {
+            ValidateProjectIdIsSet();
+            ValidateSubscriptionIdIsSet();
+
+            messageHandler.ThrowExceptionIfNull("messageHandler");
+
+            _subscriberService.StartConsuming(_projectId, _subscriptionId, messageHandler, throttle);
+        }
+
         public void StopConsuming()
         {
             _subscriberService.StopConsuming();
