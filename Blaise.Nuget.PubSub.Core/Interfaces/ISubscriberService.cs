@@ -6,7 +6,7 @@ namespace Blaise.Nuget.PubSub.Core.Interfaces
     {
         void StartConsuming(string projectId, string subscriptionId, IMessageHandler messageHandler, bool throttle = false);
 
-        void StartConsuming(string projectId, string subscriptionId, IMessageTriggerHandler messageHandler, bool throttle = false);
+        void StartConsuming(string projectId, string subscriptionId, IMessageTriggerHandler messageHandler);
 
         void StopConsuming();
     }

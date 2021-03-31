@@ -501,14 +501,14 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
         }
 
         [Test]
-        public void Given_Previous_Steps_Are_Setup_And_I_Do_Not_Supply_Throttle_When_I_Call_StartConsuming_With_MessageTriggerHandler_Then_It_Calls_The_Correct_Service_Method()
+        public void Given_Previous_Steps_Are_Setup_When_I_Call_StartConsuming_With_MessageTriggerHandler_Then_It_Calls_The_Correct_Service_Method()
         {
             //arrange
             var messageHandler = new TestMessageTriggerHandler();
 
 
             _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(),
-                It.IsAny<IMessageTriggerHandler>(), It.IsAny<bool>()));
+                It.IsAny<IMessageTriggerHandler>()));
 
             _sut.WithProject(_projectId);
             _sut.WithSubscription(_subscriptionId);
@@ -517,28 +517,7 @@ namespace Blaise.Nuget.PubSub.Tests.Unit.Api
             _sut.StartConsuming(messageHandler);
 
             //assert
-            _subscriberServiceMock.Verify(v => v.StartConsuming(_projectId, _subscriptionId, messageHandler, false));
-        }
-
-        [TestCase(true)]
-        [TestCase(false)]
-        public void Given_Previous_Steps_Are_Setup_And_I_Supply_Throttle_When_I_Call_StartConsuming_With_MessageTriggerHandler_Then_It_Calls_The_Correct_Service_Method(bool throttle)
-        {
-            //arrange
-            var messageHandler = new TestMessageTriggerHandler();
-
-
-            _subscriberServiceMock.Setup(s => s.StartConsuming(It.IsAny<string>(), It.IsAny<string>(),
-                It.IsAny<IMessageHandler>(), It.IsAny<bool>()));
-
-            _sut.WithProject(_projectId);
-            _sut.WithSubscription(_subscriptionId);
-
-            //act
-            _sut.StartConsuming(messageHandler, throttle);
-
-            //assert
-            _subscriberServiceMock.Verify(v => v.StartConsuming(_projectId, _subscriptionId, messageHandler, throttle));
+            _subscriberServiceMock.Verify(v => v.StartConsuming(_projectId, _subscriptionId, messageHandler));
         }
 
         [Test]

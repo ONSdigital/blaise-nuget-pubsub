@@ -19,9 +19,9 @@ namespace Blaise.Nuget.PubSub.Core.Services
             createSubscriptionTask.WaitAndUnwrapException();
         }
 
-        public void StartConsuming(string projectId, string subscriptionId, IMessageTriggerHandler messageHandler, bool throttle = false)
+        public void StartConsuming(string projectId, string subscriptionId, IMessageTriggerHandler messageHandler)
         {
-            var createSubscriptionTask = StartConsumingAsync(projectId, subscriptionId, messageHandler, throttle);
+            var createSubscriptionTask = StartConsumingAsync(projectId, subscriptionId, messageHandler);
             createSubscriptionTask.WaitAndUnwrapException();
         }
 
@@ -55,15 +55,11 @@ namespace Blaise.Nuget.PubSub.Core.Services
             #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
-        private async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageTriggerHandler messageHandler, bool throttle)
+        private async Task StartConsumingAsync(string projectId, string subscriptionId, IMessageTriggerHandler messageHandler)
         {
             var subscriptionName = new SubscriptionName(projectId, subscriptionId);
 
-            var settings = throttle
-                ? new SubscriberClient.Settings { FlowControlSettings = new FlowControlSettings(1L, null) }
-                : null;
-
-            _subscriberClient = await SubscriberClient.CreateAsync(subscriptionName, null, settings);
+            _subscriberClient = await SubscriberClient.CreateAsync(subscriptionName);
 
             //Blame google
             #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed

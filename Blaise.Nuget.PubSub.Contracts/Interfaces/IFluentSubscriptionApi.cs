@@ -14,7 +14,7 @@ namespace Blaise.Nuget.PubSub.Contracts.Interfaces
         //Throttle is used to control message flow to one message at a time
         void StartConsuming(IMessageHandler messageHandler, bool throttle = false);
 
-        void StartConsuming(IMessageTriggerHandler messageHandler, bool throttle = false);
+        void StartConsuming(IMessageTriggerHandler messageHandler);
 
         void StopConsuming();
     }
